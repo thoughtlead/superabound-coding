@@ -1,0 +1,21 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Env files
+.env
+.env.*
+
+# Dependencies/build outputs
+node_modules/
+dist/
+build/
+.output/
+.nuxt/
+
+# Editors
+.idea/
+.vscode/
