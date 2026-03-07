@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 
 const BUCKET = "library-assets";
@@ -11,7 +11,10 @@ type StorageUploadFieldProps = {
   helpText?: string;
   label: string;
   name: string;
+  allowUpload?: boolean;
   initialValue?: string | null;
+  onChange?: (value: string) => void;
+  value?: string;
 };
 
 function sanitizeFilename(filename: string) {
@@ -24,11 +27,29 @@ export function StorageUploadField({
   helpText,
   label,
   name,
+  allowUpload = true,
   initialValue,
+  onChange,
+  value: controlledValue,
 }: StorageUploadFieldProps) {
-  const [value, setValue] = useState(initialValue ?? "");
+  const [internalValue, setInternalValue] = useState(initialValue ?? "");
   const [message, setMessage] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const value = controlledValue ?? internalValue;
+
+  useEffect(() => {
+    if (controlledValue === undefined) {
+      setInternalValue(initialValue ?? "");
+    }
+  }, [controlledValue, initialValue]);
+
+  const updateValue = (nextValue: string) => {
+    if (controlledValue === undefined) {
+      setInternalValue(nextValue);
+    }
+
+    onChange?.(nextValue);
+  };
 
   const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -55,7 +76,7 @@ export function StorageUploadField({
       data: { publicUrl },
     } = supabase.storage.from(BUCKET).getPublicUrl(objectPath);
 
-    setValue(publicUrl);
+    updateValue(publicUrl);
     setMessage("Upload complete.");
     setUploading(false);
   };
@@ -67,13 +88,15 @@ export function StorageUploadField({
       <input
         type="url"
         value={value}
-        onChange={(event) => setValue(event.target.value)}
+        onChange={(event) => updateValue(event.target.value)}
         placeholder="https://..."
       />
-      <div className="upload-actions">
-        <input accept={accept} onChange={handleFileChange} type="file" />
-        {uploading ? <span className="form-note">Uploading...</span> : null}
-      </div>
+      {allowUpload ? (
+        <div className="upload-actions">
+          <input accept={accept} onChange={handleFileChange} type="file" />
+          {uploading ? <span className="form-note">Uploading...</span> : null}
+        </div>
+      ) : null}
       {helpText ? <p className="form-note">{helpText}</p> : null}
       {message ? <p className="form-status">{message}</p> : null}
     </div>

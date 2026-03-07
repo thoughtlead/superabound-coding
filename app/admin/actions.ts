@@ -21,6 +21,7 @@ function getPosition(formData: FormData, key: string) {
 function withMessage(path: string, message: string) {
   const url = new URL(path, "http://localhost");
   url.searchParams.set("message", message);
+  url.searchParams.set("_r", String(Date.now()));
   return `${url.pathname}${url.search}`;
 }
 

@@ -10,6 +10,7 @@ import {
   updateLessonAction,
 } from "@/app/admin/actions";
 import { AppShell } from "@/components/app-shell";
+import { BlockEditorFields } from "@/components/block-editor-fields";
 import { SetupState } from "@/components/setup-state";
 import { StorageUploadField } from "@/components/storage-upload-field";
 import { requireAdmin } from "@/utils/auth";
@@ -21,6 +22,7 @@ type AdminLessonPageProps = {
   };
   searchParams?: {
     message?: string;
+    _r?: string;
   };
 };
 
@@ -46,6 +48,7 @@ export default async function AdminLessonPage({
   const updateLesson = updateLessonAction.bind(null, lesson.id, lesson.courseSlug);
   const createBlock = createBlockAction.bind(null, lesson.id);
   const createDownload = createDownloadAction.bind(null, lesson.id);
+  const refreshKey = searchParams?._r ?? "initial";
 
   return (
     <AppShell
@@ -117,70 +120,16 @@ export default async function AdminLessonPage({
                 <span className="pill">{block.type}</span>
               </div>
               <form action={updateBlock} className="editor-form stack">
-                <div className="field-grid">
-                  <div>
-                    <label htmlFor={`block-type-${block.id}`}>Type</label>
-                    <select
-                      defaultValue={block.type}
-                      id={`block-type-${block.id}`}
-                      name="blockType"
-                    >
-                      <option value="video">Video</option>
-                      <option value="audio">Audio</option>
-                      <option value="rich_text">Rich text</option>
-                      <option value="download">Download button</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label htmlFor={`block-position-${block.id}`}>Position</label>
-                    <input
-                      defaultValue={block.position}
-                      id={`block-position-${block.id}`}
-                      name="position"
-                      type="number"
-                    />
-                  </div>
-                </div>
-                <div className="field-grid">
-                  <div>
-                    <label htmlFor={`block-title-${block.id}`}>Title</label>
-                    <input defaultValue={block.title ?? ""} id={`block-title-${block.id}`} name="title" type="text" />
-                  </div>
-                  <div>
-                    <label htmlFor={`block-provider-${block.id}`}>Media provider</label>
-                    <input
-                      defaultValue={block.mediaProvider ?? ""}
-                      id={`block-provider-${block.id}`}
-                      name="mediaProvider"
-                      placeholder="vimeo or wistia"
-                      type="text"
-                    />
-                  </div>
-                </div>
-                <div className="field-grid">
-                  <div>
-                    <label htmlFor={`block-media-url-${block.id}`}>Media URL</label>
-                    <input
-                      defaultValue={block.mediaUrl ?? ""}
-                      id={`block-media-url-${block.id}`}
-                      name="mediaUrl"
-                      type="url"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor={`block-embed-url-${block.id}`}>Embed URL</label>
-                    <input
-                      defaultValue={block.embedUrl ?? ""}
-                      id={`block-embed-url-${block.id}`}
-                      name="embedUrl"
-                      type="url"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label htmlFor={`block-body-${block.id}`}>Body / rich text HTML</label>
-                  <textarea defaultValue={block.body ?? ""} id={`block-body-${block.id}`} name="body" rows={7} />
-                </div>
+                <BlockEditorFields
+                  initialBody={block.body}
+                  initialEmbedUrl={block.embedUrl}
+                  initialMediaProvider={block.mediaProvider}
+                  initialMediaUrl={block.mediaUrl}
+                  initialPosition={block.position}
+                  initialTitle={block.title}
+                  initialType={block.type}
+                  prefix={`block-${block.id}`}
+                />
                 <div className="panel-actions">
                   <button type="submit">Save block</button>
                 </div>
@@ -197,41 +146,11 @@ export default async function AdminLessonPage({
 
       <section className="panel lesson-panel">
         <h2>Add content block</h2>
-        <form action={createBlock} className="editor-form stack">
-          <input name="position" type="hidden" value={lesson.blocks.length} />
-          <div className="field-grid">
-            <div>
-              <label htmlFor="new-block-type">Type</label>
-              <select defaultValue="rich_text" id="new-block-type" name="blockType">
-                <option value="video">Video</option>
-                <option value="audio">Audio</option>
-                <option value="rich_text">Rich text</option>
-                <option value="download">Download button</option>
-              </select>
-            </div>
-            <div>
-              <label htmlFor="new-block-title">Title</label>
-              <input id="new-block-title" name="title" type="text" />
-            </div>
-          </div>
-          <div className="field-grid">
-            <div>
-              <label htmlFor="new-block-provider">Media provider</label>
-              <input id="new-block-provider" name="mediaProvider" placeholder="vimeo or wistia" type="text" />
-            </div>
-            <div>
-              <label htmlFor="new-block-media-url">Media URL</label>
-              <input id="new-block-media-url" name="mediaUrl" type="url" />
-            </div>
-          </div>
-          <div>
-            <label htmlFor="new-block-embed-url">Embed URL</label>
-            <input id="new-block-embed-url" name="embedUrl" type="url" />
-          </div>
-          <div>
-            <label htmlFor="new-block-body">Body / rich text HTML</label>
-            <textarea id="new-block-body" name="body" rows={6} />
-          </div>
+        <form action={createBlock} className="editor-form stack" key={`create-block-${refreshKey}`}>
+          <BlockEditorFields
+            initialPosition={lesson.blocks.length}
+            prefix={`new-block-${refreshKey}`}
+          />
           <div className="panel-actions">
             <button type="submit">Add content block</button>
           </div>
@@ -293,7 +212,7 @@ export default async function AdminLessonPage({
 
       <section className="panel lesson-panel">
         <h2>Add download</h2>
-        <form action={createDownload} className="editor-form stack">
+        <form action={createDownload} className="editor-form stack" key={`create-download-${refreshKey}`}>
           <input name="position" type="hidden" value={lesson.downloads.length} />
           <div>
             <label htmlFor="new-download-title">Title</label>

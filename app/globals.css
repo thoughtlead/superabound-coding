@@ -491,6 +491,42 @@ form {
   background: transparent;
 }
 
+.rich-editor {
+  display: grid;
+  gap: 10px;
+}
+
+.rich-editor-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.rich-editor-toolbar button {
+  padding: 8px 12px;
+}
+
+.rich-editor-surface {
+  min-height: 220px;
+  border: 1px solid var(--line-strong);
+  border-radius: 18px;
+  padding: 16px;
+  background: #fffdf9;
+  color: var(--text);
+  line-height: 1.6;
+}
+
+.rich-editor-surface:focus {
+  outline: 2px solid rgba(166, 90, 58, 0.18);
+  outline-offset: 2px;
+}
+
+.rich-editor-surface p,
+.rich-editor-surface li,
+.rich-editor-surface h2 {
+  color: var(--text);
+}
+
 .meta-grid {
   display: grid;
   gap: 12px;
