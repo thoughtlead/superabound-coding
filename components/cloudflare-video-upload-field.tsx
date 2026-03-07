@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import * as tus from "tus-js-client";
 
 type CloudflareVideoUploadFieldProps = {
@@ -17,14 +17,93 @@ type UploadedVideoValues = {
   mediaUrl: string;
 };
 
+type CloudflareVideoStatus = {
+  errorReasonCode: string | null;
+  errorReasonText: string | null;
+  pctComplete: number | string | null;
+  previewUrl: string | null;
+  readyToStream: boolean;
+  state: string | null;
+  step: string | null;
+  thumbnailUrl: string | null;
+};
+
+const STATUS_POLL_INTERVAL_MS = 5000;
+
+function formatProcessingMessage(status: CloudflareVideoStatus) {
+  if (status.readyToStream) {
+    return "Video is ready to stream.";
+  }
+
+  if (status.errorReasonText) {
+    return `Cloudflare processing failed: ${status.errorReasonText}`;
+  }
+
+  const progress =
+    status.pctComplete !== null && status.pctComplete !== undefined
+      ? ` (${status.pctComplete}%)`
+      : "";
+
+  if (status.state || status.step) {
+    return `Upload complete. Cloudflare is processing the video${progress}.${status.step ? ` ${status.step}.` : ""}`;
+  }
+
+  return `Upload complete. Cloudflare is processing the video${progress}.`;
+}
+
 export function CloudflareVideoUploadField({
   onUploaded,
 }: CloudflareVideoUploadFieldProps) {
   const [message, setMessage] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState<number | null>(null);
+  const [processingStatus, setProcessingStatus] = useState<CloudflareVideoStatus | null>(null);
   const uploadRef = useRef<tus.Upload | null>(null);
   const uploadedVideoRef = useRef<UploadedVideoValues | null>(null);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  const pollVideoStatus = async (mediaId: string) => {
+    while (isMountedRef.current) {
+      const response = await fetch(
+        `/api/admin/cloudflare-stream/video-status?mediaId=${encodeURIComponent(mediaId)}`,
+        {
+          cache: "no-store",
+        },
+      );
+      const payload = (await response.json()) as CloudflareVideoStatus | { error: string };
+
+      if (!response.ok || "error" in payload) {
+        if (isMountedRef.current) {
+          setMessage(
+            "error" in payload ? payload.error : "Could not fetch Cloudflare processing status.",
+          );
+          setProcessingStatus(null);
+        }
+        return;
+      }
+
+      if (!isMountedRef.current) {
+        return;
+      }
+
+      setProcessingStatus(payload);
+      setMessage(formatProcessingMessage(payload));
+
+      if (payload.readyToStream || payload.errorReasonText) {
+        return;
+      }
+
+      await new Promise((resolve) => {
+        window.setTimeout(resolve, STATUS_POLL_INTERVAL_MS);
+      });
+    }
+  };
 
   const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -37,6 +116,7 @@ export function CloudflareVideoUploadField({
     setUploading(true);
     setMessage(null);
     setProgress(0);
+    setProcessingStatus(null);
     uploadedVideoRef.current = null;
 
     const upload = new tus.Upload(file, {
@@ -62,18 +142,31 @@ export function CloudflareVideoUploadField({
         }
       },
       onError(error) {
+        if (!isMountedRef.current) {
+          return;
+        }
+
         setMessage(error.message || "Cloudflare upload failed.");
         setUploading(false);
         setProgress(null);
+        setProcessingStatus(null);
         input.value = "";
       },
       onProgress(bytesUploaded, bytesTotal) {
+        if (!isMountedRef.current) {
+          return;
+        }
+
         setProgress(Math.round((bytesUploaded / bytesTotal) * 100));
       },
-      onSuccess() {
+      async onSuccess() {
         const uploadedVideo = uploadedVideoRef.current;
 
         if (!uploadedVideo) {
+          if (!isMountedRef.current) {
+            return;
+          }
+
           setMessage("Video uploaded, but Cloudflare did not return a video ID.");
           setUploading(false);
           setProgress(null);
@@ -82,10 +175,17 @@ export function CloudflareVideoUploadField({
         }
 
         onUploaded(uploadedVideo);
-        setMessage("Video uploaded to Cloudflare Stream.");
+
+        if (!isMountedRef.current) {
+          return;
+        }
+
         setUploading(false);
         setProgress(100);
+        setMessage("Upload complete. Checking Cloudflare processing status...");
         input.value = "";
+
+        await pollVideoStatus(uploadedVideo.mediaUrl);
       },
     });
 
@@ -105,6 +205,7 @@ export function CloudflareVideoUploadField({
       setMessage(messageText);
       setUploading(false);
       setProgress(null);
+      setProcessingStatus(null);
       input.value = "";
     }
   };
@@ -120,6 +221,7 @@ export function CloudflareVideoUploadField({
     uploadRef.current = null;
     setUploading(false);
     setProgress(null);
+    setProcessingStatus(null);
     setMessage("Upload canceled.");
   };
 
@@ -141,6 +243,11 @@ export function CloudflareVideoUploadField({
       </p>
       {progress !== null ? <p className="form-note">Upload progress: {progress}%</p> : null}
       {message ? <p className="form-status">{message}</p> : null}
+      {processingStatus?.thumbnailUrl ? (
+        <p className="form-note">
+          Processing thumbnail available: <a href={processingStatus.thumbnailUrl}>open thumbnail</a>
+        </p>
+      ) : null}
     </div>
   );
 }
