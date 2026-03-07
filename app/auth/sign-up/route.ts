@@ -48,14 +48,9 @@ export async function POST(request: Request) {
   }
 
   if (!data.session) {
-    return NextResponse.redirect(
-      toMessageUrl(
-        request.url,
-        "/login",
-        "Account created. Confirm your email before signing in.",
-      ),
-      { status: 303 },
-    );
+    const confirmUrl = new URL("/signup/confirm-email", request.url);
+    confirmUrl.searchParams.set("email", email);
+    return NextResponse.redirect(confirmUrl, { status: 303 });
   }
 
   return response;
