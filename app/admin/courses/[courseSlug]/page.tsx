@@ -1,7 +1,18 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import {
+  createLessonAction,
+  createModuleAction,
+  moveLessonDownAction,
+  moveLessonUpAction,
+  moveModuleDownAction,
+  moveModuleUpAction,
+  updateCourseAction,
+  updateModuleAction,
+} from "@/app/admin/actions";
 import { AppShell } from "@/components/app-shell";
 import { SetupState } from "@/components/setup-state";
+import { StorageUploadField } from "@/components/storage-upload-field";
 import { requireAdmin } from "@/utils/auth";
 import { getAdminCourse, getCourseLessonCount } from "@/utils/library";
 
@@ -9,15 +20,21 @@ type AdminCoursePageProps = {
   params: {
     courseSlug: string;
   };
+  searchParams?: {
+    message?: string;
+  };
 };
 
-export default async function AdminCoursePage({ params }: AdminCoursePageProps) {
+export default async function AdminCoursePage({
+  params,
+  searchParams,
+}: AdminCoursePageProps) {
   await requireAdmin();
   const { course, setupRequired } = await getAdminCourse(params.courseSlug);
 
   if (setupRequired) {
     return (
-      <AppShell title="Admin setup" eyebrow="Courses">
+      <AppShell title="Admin setup" eyebrow="Courses" showAdmin>
         <SetupState />
       </AppShell>
     );
@@ -27,55 +44,232 @@ export default async function AdminCoursePage({ params }: AdminCoursePageProps) 
     notFound();
   }
 
+  const updateCourse = updateCourseAction.bind(null, course.id, course.slug);
+  const createModule = createModuleAction.bind(null, course.slug, course.id);
+
   return (
     <AppShell
       title={course.title}
-      eyebrow="Admin / Course outline"
+      eyebrow="Admin / Course editor"
       showAdmin
       actions={<span className="stat-chip">{getCourseLessonCount(course)} lessons</span>}
     >
-      <section className="hero panel">
-        <div className="hero-copy">
-          {course.subtitle ? <p className="lede">{course.subtitle}</p> : null}
-          {course.description ? <p>{course.description}</p> : null}
+      {searchParams?.message ? <p className="form-status">{searchParams.message}</p> : null}
+      <section className="panel lesson-panel">
+        <div className="row-spread">
+          <h2>Course details</h2>
+          <Link className="button button-secondary" href={`/library/${course.slug}`}>
+            Preview member view
+          </Link>
         </div>
-        <div className="stack stack-tight">
-          <span className="pill">{course.status}</span>
-          <p className="admin-note">
-            Lesson editing is structured as a dedicated screen so video, text, and downloads can grow independently.
-          </p>
-        </div>
+        <form action={updateCourse} className="editor-form stack">
+          <div className="field-grid">
+            <div>
+              <label htmlFor="course-title">Title</label>
+              <input defaultValue={course.title} id="course-title" name="title" required type="text" />
+            </div>
+            <div>
+              <label htmlFor="course-slug">Slug</label>
+              <input defaultValue={course.slug} id="course-slug" name="slug" required type="text" />
+            </div>
+          </div>
+          <div className="field-grid">
+            <div>
+              <label htmlFor="course-subtitle">Subtitle</label>
+              <input defaultValue={course.subtitle ?? ""} id="course-subtitle" name="subtitle" type="text" />
+            </div>
+            <div>
+              <label htmlFor="course-status">Status</label>
+              <select defaultValue={course.status} id="course-status" name="status">
+                <option value="draft">Draft</option>
+                <option value="published">Published</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label htmlFor="course-description">Description</label>
+            <textarea defaultValue={course.description ?? ""} id="course-description" name="description" rows={4} />
+          </div>
+          <StorageUploadField
+            accept="image/*"
+            folder="course-thumbnails"
+            helpText="Upload a thumbnail or paste an external image URL."
+            initialValue={course.thumbnailUrl}
+            label="Thumbnail"
+            name="thumbnailUrl"
+          />
+          <div className="panel-actions">
+            <button type="submit">Save course</button>
+          </div>
+        </form>
       </section>
+
+      <section className="panel lesson-panel">
+        <h2>Add module</h2>
+        <form action={createModule} className="editor-form stack">
+          <input name="position" type="hidden" value={course.modules.length} />
+          <div className="field-grid">
+            <div>
+              <label htmlFor="module-title">Title</label>
+              <input id="module-title" name="title" required type="text" />
+            </div>
+            <div>
+              <label htmlFor="module-status">Status</label>
+              <select defaultValue="draft" id="module-status" name="status">
+                <option value="draft">Draft</option>
+                <option value="published">Published</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label htmlFor="module-description">Description</label>
+            <textarea id="module-description" name="description" rows={3} />
+          </div>
+          <div className="panel-actions">
+            <button type="submit">Add module</button>
+          </div>
+        </form>
+      </section>
+
       <section className="stack">
-        {course.modules.map((moduleItem) => (
-          <article key={moduleItem.id} className="panel module-card">
-            <div className="module-head">
-              <div>
-                <p className="eyebrow">Module {moduleItem.position + 1}</p>
-                <h2>{moduleItem.title}</h2>
-                {moduleItem.description ? <p>{moduleItem.description}</p> : null}
+        {course.modules.map((moduleItem) => {
+          const updateModule = updateModuleAction.bind(null, course.slug, moduleItem.id);
+          const moveModuleUp = moveModuleUpAction.bind(null, course.slug, moduleItem.id);
+          const moveModuleDown = moveModuleDownAction.bind(null, course.slug, moduleItem.id);
+          const createLesson = createLessonAction.bind(null, course.slug, moduleItem.id);
+
+          return (
+            <article key={moduleItem.id} className="panel module-card">
+              <div className="row-spread">
+                <div>
+                  <p className="eyebrow">Module {moduleItem.position + 1}</p>
+                  <h2>{moduleItem.title}</h2>
+                </div>
+                <div className="inline-actions">
+                  <form action={moveModuleUp}>
+                    <button className="button button-secondary" type="submit">
+                      Move up
+                    </button>
+                  </form>
+                  <form action={moveModuleDown}>
+                    <button className="button button-secondary" type="submit">
+                      Move down
+                    </button>
+                  </form>
+                </div>
               </div>
-            </div>
-            <div className="lesson-list">
-              {moduleItem.lessons.map((lesson) => (
-                <Link
-                  key={lesson.id}
-                  className="lesson-row"
-                  href={`/admin/lessons/${lesson.id}`}
-                >
+
+              <form action={updateModule} className="editor-form stack">
+                <div className="field-grid">
                   <div>
-                    <span className="lesson-index">{lesson.position + 1}</span>
-                    <div>
-                      <h3>{lesson.title}</h3>
-                      {lesson.summary ? <p>{lesson.summary}</p> : null}
-                    </div>
+                    <label htmlFor={`module-title-${moduleItem.id}`}>Title</label>
+                    <input
+                      defaultValue={moduleItem.title}
+                      id={`module-title-${moduleItem.id}`}
+                      name="title"
+                      required
+                      type="text"
+                    />
                   </div>
-                  <span className="row-link">Edit</span>
-                </Link>
-              ))}
-            </div>
-          </article>
-        ))}
+                  <div>
+                    <label htmlFor={`module-status-${moduleItem.id}`}>Status</label>
+                    <select
+                      defaultValue={moduleItem.status}
+                      id={`module-status-${moduleItem.id}`}
+                      name="status"
+                    >
+                      <option value="draft">Draft</option>
+                      <option value="published">Published</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label htmlFor={`module-description-${moduleItem.id}`}>Description</label>
+                  <textarea
+                    defaultValue={moduleItem.description ?? ""}
+                    id={`module-description-${moduleItem.id}`}
+                    name="description"
+                    rows={3}
+                  />
+                </div>
+                <div className="panel-actions">
+                  <button type="submit">Save module</button>
+                </div>
+              </form>
+
+              <div className="lesson-list">
+                {moduleItem.lessons.map((lesson, index) => {
+                  const moveLessonUp = moveLessonUpAction.bind(null, course.slug, lesson.id);
+                  const moveLessonDown = moveLessonDownAction.bind(null, course.slug, lesson.id);
+
+                  return (
+                    <div key={lesson.id} className="lesson-row lesson-row-admin">
+                      <div>
+                        <span className="lesson-index">{index + 1}</span>
+                        <div>
+                          <h3>{lesson.title}</h3>
+                          {lesson.summary ? <p>{lesson.summary}</p> : null}
+                        </div>
+                      </div>
+                      <div className="inline-actions">
+                        <form action={moveLessonUp}>
+                          <button className="button button-secondary" type="submit">
+                            Up
+                          </button>
+                        </form>
+                        <form action={moveLessonDown}>
+                          <button className="button button-secondary" type="submit">
+                            Down
+                          </button>
+                        </form>
+                        <Link className="button button-secondary" href={`/admin/lessons/${lesson.id}`}>
+                          Edit lesson
+                        </Link>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <form action={createLesson} className="editor-form stack editor-subsection">
+                <input name="position" type="hidden" value={moduleItem.lessons.length} />
+                <div className="field-grid">
+                  <div>
+                    <label htmlFor={`lesson-title-${moduleItem.id}`}>New lesson title</label>
+                    <input id={`lesson-title-${moduleItem.id}`} name="title" required type="text" />
+                  </div>
+                  <div>
+                    <label htmlFor={`lesson-slug-${moduleItem.id}`}>Slug</label>
+                    <input id={`lesson-slug-${moduleItem.id}`} name="slug" type="text" />
+                  </div>
+                </div>
+                <div className="field-grid">
+                  <div>
+                    <label htmlFor={`lesson-status-${moduleItem.id}`}>Status</label>
+                    <select defaultValue="draft" id={`lesson-status-${moduleItem.id}`} name="status">
+                      <option value="draft">Draft</option>
+                      <option value="published">Published</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor={`lesson-summary-${moduleItem.id}`}>Summary</label>
+                    <input id={`lesson-summary-${moduleItem.id}`} name="summary" type="text" />
+                  </div>
+                </div>
+                <StorageUploadField
+                  accept="image/*"
+                  folder="lesson-thumbnails"
+                  helpText="Optional lesson thumbnail."
+                  label="Lesson thumbnail"
+                  name="thumbnailUrl"
+                />
+                <div className="panel-actions">
+                  <button type="submit">Add lesson</button>
+                </div>
+              </form>
+            </article>
+          );
+        })}
       </section>
     </AppShell>
   );

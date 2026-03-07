@@ -150,6 +150,15 @@ export type LessonContent = {
   downloads: LessonDownload[];
 };
 
+export type AdminLessonEditor = LessonContent & {
+  slug: string;
+  status: "draft" | "published";
+  moduleId: string;
+  moduleTitle: string;
+  courseSlug: string;
+  courseTitle: string;
+};
+
 function isSetupError(error: QueryError | null) {
   return error?.code === "42P01" || error?.code === "42703";
 }
@@ -357,6 +366,77 @@ export async function getLessonContent(lessonId: string) {
             })),
         }
       : null,
+  };
+}
+
+export async function getAdminLessonEditor(lessonId: string) {
+  const supabase = createClient();
+  const { data: lessonRow, error: lessonError } = await supabase
+    .from("lessons")
+    .select("id, title, slug, summary, thumbnail_url, status, module_id")
+    .eq("id", lessonId)
+    .maybeSingle();
+
+  const lessonState = toQueryState(
+    lessonRow as {
+      id: string;
+      title: string;
+      slug: string;
+      summary: string | null;
+      thumbnail_url: string | null;
+      status: "draft" | "published";
+      module_id: string;
+    } | null,
+    lessonError,
+  );
+
+  if (!lessonState.data) {
+    return {
+      setupRequired: lessonState.setupRequired,
+      lesson: null,
+    };
+  }
+
+  const { data: moduleRow, error: moduleError } = await supabase
+    .from("modules")
+    .select("id, title, course:courses!inner(slug, title)")
+    .eq("id", lessonState.data.module_id)
+    .maybeSingle();
+
+  const moduleState = toQueryState(
+    moduleRow as {
+      id: string;
+      title: string;
+      course: {
+        slug: string;
+        title: string;
+      } | null;
+    } | null,
+    moduleError,
+  );
+
+  const contentState = await getLessonContent(lessonId);
+
+  if (!moduleState.data?.course || !contentState.lesson) {
+    return {
+      setupRequired:
+        lessonState.setupRequired || moduleState.setupRequired || contentState.setupRequired,
+      lesson: null,
+    };
+  }
+
+  return {
+    setupRequired:
+      lessonState.setupRequired || moduleState.setupRequired || contentState.setupRequired,
+    lesson: {
+      ...contentState.lesson,
+      slug: lessonState.data.slug,
+      status: lessonState.data.status,
+      moduleId: moduleState.data.id,
+      moduleTitle: moduleState.data.title,
+      courseSlug: moduleState.data.course.slug,
+      courseTitle: moduleState.data.course.title,
+    } satisfies AdminLessonEditor,
   };
 }
 

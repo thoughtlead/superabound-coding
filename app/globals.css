@@ -51,6 +51,20 @@ input {
   color: var(--text);
 }
 
+textarea,
+select {
+  width: 100%;
+  border: 1px solid var(--line-strong);
+  border-radius: 16px;
+  padding: 14px 16px;
+  background: #fffdf9;
+  color: var(--text);
+}
+
+textarea {
+  resize: vertical;
+}
+
 button,
 .button {
   display: inline-flex;
@@ -415,6 +429,68 @@ form {
   gap: 12px;
 }
 
+.editor-form label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.field-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.row-spread {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.inline-actions,
+.panel-actions,
+.upload-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.lesson-row-admin {
+  align-items: flex-start;
+}
+
+.editor-subsection {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(200, 179, 150, 0.58);
+}
+
+.download-editor {
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(200, 179, 150, 0.58);
+}
+
+.download-editor:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.upload-field {
+  display: grid;
+  gap: 10px;
+}
+
+.upload-actions input[type="file"] {
+  width: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
 .meta-grid {
   display: grid;
   gap: 12px;
@@ -495,6 +571,12 @@ form {
   .admin-course-row,
   .download-row {
     align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .field-grid,
+  .row-spread {
+    grid-template-columns: 1fr;
     flex-direction: column;
   }
 }
