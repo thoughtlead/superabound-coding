@@ -18,10 +18,15 @@ function getPosition(formData: FormData, key: string) {
   return Number.isFinite(value) ? value : 0;
 }
 
-function withMessage(path: string, message: string) {
+function withMessage(path: string, message: string, extras?: Record<string, string>) {
   const url = new URL(path, "http://localhost");
   url.searchParams.set("message", message);
   url.searchParams.set("_r", String(Date.now()));
+  if (extras) {
+    Object.entries(extras).forEach(([key, value]) => {
+      url.searchParams.set(key, value);
+    });
+  }
   return `${url.pathname}${url.search}`;
 }
 
@@ -215,7 +220,12 @@ export async function createModuleAction(courseSlug: string, courseId: string, f
   }
 
   revalidatePath(`/admin/courses/${courseSlug}`);
-  redirect(withMessage(`/admin/courses/${courseSlug}`, "Module added."));
+  redirect(
+    withMessage(`/admin/courses/${courseSlug}`, "Module added.", {
+      moduleAdded: "1",
+      moduleFormKey: String(Date.now()),
+    }),
+  );
 }
 
 export async function updateModuleAction(

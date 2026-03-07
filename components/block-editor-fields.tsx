@@ -13,6 +13,7 @@ type BlockEditorFieldsProps = {
   initialPosition?: number;
   initialTitle?: string | null;
   initialType?: "video" | "audio" | "rich_text" | "download";
+  onVideoUploaded?: () => void;
   prefix: string;
 };
 
@@ -24,6 +25,7 @@ export function BlockEditorFields({
   initialPosition = 0,
   initialTitle,
   initialType = "rich_text",
+  onVideoUploaded,
   prefix,
 }: BlockEditorFieldsProps) {
   const [blockType, setBlockType] = useState(initialType);
@@ -156,6 +158,7 @@ export function BlockEditorFields({
               setEmbedUrl(nextEmbedUrl);
               setMediaProvider(nextProvider);
               setMediaUrl(nextMediaUrl);
+              onVideoUploaded?.();
             }}
           />
           <StorageUploadField

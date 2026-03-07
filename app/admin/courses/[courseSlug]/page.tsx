@@ -22,6 +22,8 @@ type AdminCoursePageProps = {
   };
   searchParams?: {
     message?: string;
+    moduleAdded?: string;
+    moduleFormKey?: string;
   };
 };
 
@@ -46,6 +48,8 @@ export default async function AdminCoursePage({
 
   const updateCourse = updateCourseAction.bind(null, course.id, course.slug);
   const createModule = createModuleAction.bind(null, course.slug, course.id);
+  const moduleFormKey = searchParams?.moduleFormKey ?? "module-form";
+  const showModuleAddedTag = searchParams?.moduleAdded === "1";
 
   return (
     <AppShell
@@ -105,8 +109,11 @@ export default async function AdminCoursePage({
       </section>
 
       <section className="panel lesson-panel">
-        <h2>Add module</h2>
-        <form action={createModule} className="editor-form stack">
+        <div className="row-spread">
+          <h2>Add module</h2>
+          {showModuleAddedTag ? <span className="stat-chip">Module added</span> : null}
+        </div>
+        <form key={moduleFormKey} action={createModule} className="editor-form stack">
           <input name="position" type="hidden" value={course.modules.length} />
           <div className="field-grid">
             <div>

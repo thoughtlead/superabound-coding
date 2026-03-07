@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @next/next/no-img-element */
 
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 import * as tus from "tus-js-client";
@@ -244,9 +245,10 @@ export function CloudflareVideoUploadField({
       {progress !== null ? <p className="form-note">Upload progress: {progress}%</p> : null}
       {message ? <p className="form-status">{message}</p> : null}
       {processingStatus?.thumbnailUrl ? (
-        <p className="form-note">
-          Processing thumbnail available: <a href={processingStatus.thumbnailUrl}>open thumbnail</a>
-        </p>
+        <div className="stack stack-tight">
+          <p className="form-note">Video thumbnail</p>
+          <img alt="Cloudflare video thumbnail" src={processingStatus.thumbnailUrl} />
+        </div>
       ) : null}
     </div>
   );

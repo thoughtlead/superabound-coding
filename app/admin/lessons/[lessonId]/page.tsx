@@ -10,7 +10,7 @@ import {
   updateLessonAction,
 } from "@/app/admin/actions";
 import { AppShell } from "@/components/app-shell";
-import { BlockEditorFields } from "@/components/block-editor-fields";
+import { BlockEditorForm } from "@/components/block-editor-form";
 import { SetupState } from "@/components/setup-state";
 import { StorageUploadField } from "@/components/storage-upload-field";
 import { requireAdmin } from "@/utils/auth";
@@ -119,21 +119,18 @@ export default async function AdminLessonPage({
                 <h2>Content block</h2>
                 <span className="pill">{block.type}</span>
               </div>
-              <form action={updateBlock} className="editor-form stack">
-                <BlockEditorFields
-                  initialBody={block.body}
-                  initialEmbedUrl={block.embedUrl}
-                  initialMediaProvider={block.mediaProvider}
-                  initialMediaUrl={block.mediaUrl}
-                  initialPosition={block.position}
-                  initialTitle={block.title}
-                  initialType={block.type}
-                  prefix={`block-${block.id}`}
-                />
-                <div className="panel-actions">
-                  <button type="submit">Save block</button>
-                </div>
-              </form>
+              <BlockEditorForm
+                action={updateBlock}
+                initialBody={block.body}
+                initialEmbedUrl={block.embedUrl}
+                initialMediaProvider={block.mediaProvider}
+                initialMediaUrl={block.mediaUrl}
+                initialPosition={block.position}
+                initialTitle={block.title}
+                initialType={block.type}
+                prefix={`block-${block.id}`}
+                submitLabel="Save block"
+              />
               <form action={deleteBlock}>
                 <button className="button button-secondary" type="submit">
                   Delete block
@@ -146,15 +143,13 @@ export default async function AdminLessonPage({
 
       <section className="panel lesson-panel">
         <h2>Add content block</h2>
-        <form action={createBlock} className="editor-form stack" key={`create-block-${refreshKey}`}>
-          <BlockEditorFields
-            initialPosition={lesson.blocks.length}
-            prefix={`new-block-${refreshKey}`}
-          />
-          <div className="panel-actions">
-            <button type="submit">Add content block</button>
-          </div>
-        </form>
+        <BlockEditorForm
+          action={createBlock}
+          initialPosition={lesson.blocks.length}
+          key={`create-block-${refreshKey}`}
+          prefix={`new-block-${refreshKey}`}
+          submitLabel="Add content block"
+        />
       </section>
 
       <section className="panel lesson-panel">
