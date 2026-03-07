@@ -106,15 +106,21 @@ create trigger on_auth_user_created
 
 create or replace function public.is_admin()
 returns boolean
-language sql
-stable
+language plpgsql
+security definer
+set search_path = public
 as $$
-  select exists (
+begin
+  return exists (
     select 1
     from public.profiles
     where id = auth.uid() and role = 'admin'
   );
+end;
 $$;
+
+grant execute on function public.is_admin() to authenticated;
+grant execute on function public.is_admin() to anon;
 
 alter table public.profiles enable row level security;
 alter table public.courses enable row level security;
