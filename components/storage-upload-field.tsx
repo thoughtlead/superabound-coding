@@ -14,6 +14,8 @@ type StorageUploadFieldProps = {
   allowUpload?: boolean;
   initialValue?: string | null;
   onChange?: (value: string) => void;
+  placeholder?: string;
+  type?: "text" | "url";
   value?: string;
 };
 
@@ -30,6 +32,8 @@ export function StorageUploadField({
   allowUpload = true,
   initialValue,
   onChange,
+  placeholder = "https://...",
+  type = "url",
   value: controlledValue,
 }: StorageUploadFieldProps) {
   const [internalValue, setInternalValue] = useState(initialValue ?? "");
@@ -86,10 +90,10 @@ export function StorageUploadField({
       <label>{label}</label>
       <input name={name} type="hidden" value={value} readOnly />
       <input
-        type="url"
+        type={type}
         value={value}
         onChange={(event) => updateValue(event.target.value)}
-        placeholder="https://..."
+        placeholder={placeholder}
       />
       {allowUpload ? (
         <div className="upload-actions">
