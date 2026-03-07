@@ -1,17 +1,31 @@
 import { NextResponse } from "next/server";
 import { createRouteHandlerClient } from "@/utils/supabase/route-handler";
 
-type CloudflareDirectUploadResponse = {
-  result?: {
-    uid: string;
-    uploadURL: string;
-  };
-  success: boolean;
-  errors?: Array<{
-    code: number;
-    message: string;
-  }>;
-};
+const TUS_VERSION = "1.0.0";
+
+async function getAdminUser() {
+  const response = NextResponse.json({});
+  const supabase = createRouteHandlerClient(response);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: NextResponse.json({ error: "Unauthorized." }, { status: 401 }) };
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (profile?.role !== "admin") {
+    return { error: NextResponse.json({ error: "Forbidden." }, { status: 403 }) };
+  }
+
+  return { user };
+}
 
 export async function POST(request: Request) {
   const accountId = process.env.CLOUDFLARE_STREAM_ACCOUNT_ID;
@@ -25,57 +39,57 @@ export async function POST(request: Request) {
     );
   }
 
-  const response = NextResponse.json({});
-  const supabase = createRouteHandlerClient(response);
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const adminState = await getAdminUser();
 
-  if (!user) {
-    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  if ("error" in adminState) {
+    return adminState.error;
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .maybeSingle();
+  const uploadLength = request.headers.get("upload-length");
+  const uploadMetadata = request.headers.get("upload-metadata");
+  const tusResumable = request.headers.get("tus-resumable") ?? TUS_VERSION;
 
-  if (profile?.role !== "admin") {
-    return NextResponse.json({ error: "Forbidden." }, { status: 403 });
+  if (!uploadLength) {
+    return new NextResponse("Upload-Length header is required.", { status: 400 });
   }
 
   const cloudflareResponse = await fetch(
-    `https://api.cloudflare.com/client/v4/accounts/${accountId}/stream/direct_upload`,
+    `https://api.cloudflare.com/client/v4/accounts/${accountId}/stream?direct_user=true`,
     {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiToken}`,
-        "Content-Type": "application/json",
+        "Tus-Resumable": tusResumable,
+        "Upload-Length": uploadLength,
+        ...(uploadMetadata ? { "Upload-Metadata": uploadMetadata } : {}),
       },
-      body: JSON.stringify({
-        maxDurationSeconds: 7200,
-      }),
     },
   );
 
-  const payload =
-    (await cloudflareResponse.json()) as CloudflareDirectUploadResponse;
-
-  if (!cloudflareResponse.ok || !payload.success || !payload.result) {
-    return NextResponse.json(
-      {
-        error:
-          payload.errors?.[0]?.message ?? "Could not create Cloudflare upload URL.",
-      },
-      { status: 500 },
-    );
+  if (!cloudflareResponse.ok) {
+    const errorText = await cloudflareResponse.text();
+    return new NextResponse(errorText || "Could not create Cloudflare upload URL.", {
+      status: cloudflareResponse.status,
+    });
   }
 
-  return NextResponse.json({
-    embedUrl: `https://customer-${customerCode}.cloudflarestream.com/${payload.result.uid}/iframe`,
-    mediaProvider: "cloudflare-stream",
-    mediaUrl: payload.result.uid,
-    uploadUrl: payload.result.uploadURL,
+  const location = cloudflareResponse.headers.get("Location");
+  const mediaId = cloudflareResponse.headers.get("stream-media-id");
+
+  if (!location || !mediaId) {
+    return new NextResponse("Cloudflare did not return upload metadata.", {
+      status: 502,
+    });
+  }
+
+  return new NextResponse(null, {
+    status: cloudflareResponse.status,
+    headers: {
+      Location: location,
+      "Tus-Resumable": cloudflareResponse.headers.get("Tus-Resumable") ?? tusResumable,
+      "stream-media-id": mediaId,
+      "x-cloudflare-embed-url": `https://customer-${customerCode}.cloudflarestream.com/${mediaId}/iframe`,
+      "Cache-Control": "no-store",
+    },
   });
 }
