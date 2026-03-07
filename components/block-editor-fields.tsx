@@ -38,7 +38,12 @@ export function BlockEditorFields({
     setEmbedUrl(initialEmbedUrl ?? "");
   }, [initialEmbedUrl, initialMediaProvider, initialMediaUrl, initialType]);
 
-  const isCloudflareVideo = blockType === "video" && mediaProvider === "cloudflare-stream";
+  useEffect(() => {
+    if (blockType === "video" && !initialMediaProvider && !mediaProvider) {
+      setMediaProvider("cloudflare-stream");
+    }
+  }, [blockType, initialMediaProvider, mediaProvider]);
+
   const mediaFolder = useMemo(() => {
     if (blockType === "audio") {
       return "lesson-audio";
@@ -94,8 +99,8 @@ export function BlockEditorFields({
               onChange={(event) => setMediaProvider(event.target.value)}
               value={mediaProvider}
             >
-              <option value="">Manual URL</option>
               <option value="cloudflare-stream">Cloudflare Stream</option>
+              <option value="">Manual URL</option>
               <option value="vimeo">Vimeo</option>
               <option value="wistia">Wistia</option>
               <option value="supabase-storage">Supabase Storage</option>
@@ -141,10 +146,21 @@ export function BlockEditorFields({
 
       {blockType === "video" ? (
         <div className="stack stack-tight">
+          <CloudflareVideoUploadField
+            onUploaded={({
+              embedUrl: nextEmbedUrl,
+              mediaProvider: nextProvider,
+              mediaUrl: nextMediaUrl,
+            }) => {
+              setEmbedUrl(nextEmbedUrl);
+              setMediaProvider(nextProvider);
+              setMediaUrl(nextMediaUrl);
+            }}
+          />
           <StorageUploadField
             allowUpload={false}
             folder={mediaFolder}
-            helpText="Paste a Vimeo/Wistia URL, or use Cloudflare upload below."
+            helpText="Paste a Vimeo/Wistia URL, or upload directly to Cloudflare Stream above."
             initialValue={mediaUrl}
             label="Video URL or ID"
             name="mediaUrl"
@@ -161,15 +177,6 @@ export function BlockEditorFields({
               value={embedUrl}
             />
           </div>
-          {isCloudflareVideo ? (
-            <CloudflareVideoUploadField
-              onUploaded={({ embedUrl: nextEmbedUrl, mediaProvider: nextProvider, mediaUrl: nextMediaUrl }) => {
-                setEmbedUrl(nextEmbedUrl);
-                setMediaProvider(nextProvider);
-                setMediaUrl(nextMediaUrl);
-              }}
-            />
-          ) : null}
           <div>
             <label htmlFor={`${prefix}-body`}>Notes</label>
             <textarea
