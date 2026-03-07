@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { LoginForm } from "@/app/login/login-form";
 import { createClient } from "@/utils/supabase/server";
@@ -23,9 +24,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       <main className="panel login-card">
         <p className="eyebrow">Superabound</p>
         <h1>Enter the library</h1>
-        <p>Sign in with the email already associated with your membership.</p>
-        <LoginForm />
-        {searchParams?.message ? <p>{searchParams.message}</p> : null}
+        <p>Sign in with the email and password already associated with your membership.</p>
+        <LoginForm message={searchParams?.message} />
+        <p className="form-note">
+          New here? <Link href="/signup">Create an account</Link>.
+        </p>
       </main>
     </div>
   );

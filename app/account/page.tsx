@@ -45,6 +45,11 @@ export default async function AccountPage() {
             <strong>{setupRequired ? "Setup required" : courses.length}</strong>
           </div>
         </div>
+        <div className="page-actions">
+          <Link className="button button-secondary" href="/account/password">
+            Change password
+          </Link>
+        </div>
         <form action={logout}>
           <button type="submit">Log out</button>
         </form>
