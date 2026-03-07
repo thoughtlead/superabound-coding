@@ -10,7 +10,8 @@ import { getMemberCourses } from "@/utils/library";
 export default async function LibraryPage() {
   const { user } = await requireUser();
   const profile = await getCurrentProfile(user.id);
-  const { courses, setupRequired } = await getMemberCourses(user.id);
+  const isAdmin = profile?.role === "admin";
+  const { courses, setupRequired } = await getMemberCourses(user.id, isAdmin);
 
   return (
     <AppShell
@@ -28,8 +29,12 @@ export default async function LibraryPage() {
       {setupRequired ? <SetupState /> : null}
       {!setupRequired && courses.length === 0 ? (
         <EmptyState
-          title="No course access yet"
-          body="Members only see courses they are enrolled in. Add a course enrollment in Supabase to populate this library."
+          title={isAdmin ? "No courses yet" : "No course access yet"}
+          body={
+            isAdmin
+              ? "Create a course in admin and it will appear here immediately."
+              : "Members only see courses they are enrolled in. Add a course enrollment in Supabase to populate this library."
+          }
         />
       ) : null}
       {!setupRequired ? (

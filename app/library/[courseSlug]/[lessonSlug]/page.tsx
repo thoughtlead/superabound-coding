@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { MediaBlock } from "@/components/media-block";
 import { SetupState } from "@/components/setup-state";
-import { requireUser } from "@/utils/auth";
+import { getCurrentProfile, requireUser } from "@/utils/auth";
 import { getAccessibleCourse, getLessonContent } from "@/utils/library";
 
 type LessonPageProps = {
@@ -15,7 +15,12 @@ type LessonPageProps = {
 
 export default async function LessonPage({ params }: LessonPageProps) {
   const { user } = await requireUser();
-  const courseState = await getAccessibleCourse(user.id, params.courseSlug);
+  const profile = await getCurrentProfile(user.id);
+  const courseState = await getAccessibleCourse(
+    user.id,
+    params.courseSlug,
+    profile?.role === "admin",
+  );
 
   if (courseState.setupRequired) {
     return (

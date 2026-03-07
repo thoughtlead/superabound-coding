@@ -4,7 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { SetupState } from "@/components/setup-state";
-import { requireUser } from "@/utils/auth";
+import { getCurrentProfile, requireUser } from "@/utils/auth";
 import { getAccessibleCourse, getCourseLessonCount } from "@/utils/library";
 
 type CoursePageProps = {
@@ -15,7 +15,12 @@ type CoursePageProps = {
 
 export default async function CoursePage({ params }: CoursePageProps) {
   const { user } = await requireUser();
-  const { course, setupRequired } = await getAccessibleCourse(user.id, params.courseSlug);
+  const profile = await getCurrentProfile(user.id);
+  const { course, setupRequired } = await getAccessibleCourse(
+    user.id,
+    params.courseSlug,
+    profile?.role === "admin",
+  );
 
   if (setupRequired) {
     return (

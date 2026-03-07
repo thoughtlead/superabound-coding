@@ -224,8 +224,32 @@ export function getCourseLessonCount(course: CourseDetail) {
   }, 0);
 }
 
-export async function getMemberCourses(userId: string) {
+export async function getMemberCourses(userId: string, isAdmin = false) {
   const supabase = createClient();
+
+  if (isAdmin) {
+    const { data, error } = await supabase
+      .from("courses")
+      .select("id, slug, title, subtitle, description, thumbnail_url, status, created_at")
+      .order("created_at", { ascending: false });
+
+    const state = toQueryState(data as CourseRow[] | null, error);
+
+    return {
+      setupRequired: state.setupRequired,
+      courses: (state.data ?? []).map((course) => ({
+        id: course.id,
+        slug: course.slug,
+        title: course.title,
+        subtitle: course.subtitle,
+        description: course.description,
+        thumbnailUrl: course.thumbnail_url,
+        status: course.status,
+        createdAt: course.created_at,
+      })),
+    };
+  }
+
   const { data, error } = await supabase
     .from("course_enrollments")
     .select(
@@ -255,7 +279,15 @@ export async function getMemberCourses(userId: string) {
   };
 }
 
-export async function getAccessibleCourse(userId: string, courseSlug: string) {
+export async function getAccessibleCourse(
+  userId: string,
+  courseSlug: string,
+  isAdmin = false,
+) {
+  if (isAdmin) {
+    return getAdminCourse(courseSlug);
+  }
+
   const supabase = createClient();
   const { data, error } = await supabase
     .from("courses")
