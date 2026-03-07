@@ -19,11 +19,14 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   }
 
   return (
-    <main>
-      <h1>Login</h1>
-      <p>Sign in with your email using a magic link.</p>
-      <LoginForm />
-      {searchParams?.message ? <p>{searchParams.message}</p> : null}
-    </main>
+    <div className="login-wrap">
+      <main className="panel login-card">
+        <p className="eyebrow">Superabound</p>
+        <h1>Enter the library</h1>
+        <p>Sign in with the email already associated with your membership.</p>
+        <LoginForm />
+        {searchParams?.message ? <p>{searchParams.message}</p> : null}
+      </main>
+    </div>
   );
 }

@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Supabase Library App",
-  description: "Next.js app with Supabase email magic-link auth",
+  title: "Superabound Library",
+  description: "Course library and lesson delivery powered by Next.js and Supabase",
 };
 
 export default function RootLayout({
