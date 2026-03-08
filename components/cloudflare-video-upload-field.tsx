@@ -129,7 +129,15 @@ export function CloudflareVideoUploadField({
         filename: file.name,
         filetype: file.type,
       },
-      onAfterResponse(_request, response) {
+      onAfterResponse(request, response) {
+        const isCreationResponse =
+          request.getMethod() === "POST" &&
+          request.getURL().includes("/api/admin/cloudflare-stream/direct-upload");
+
+        if (!isCreationResponse) {
+          return;
+        }
+
         const mediaId = response.getHeader("stream-media-id");
         const embedUrl = response.getHeader("x-cloudflare-embed-url");
 

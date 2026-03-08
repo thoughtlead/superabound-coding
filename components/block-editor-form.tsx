@@ -29,11 +29,12 @@ export function BlockEditorForm({
   submitLabel,
 }: BlockEditorFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
+  const submitButtonRef = useRef<HTMLButtonElement>(null);
   const [autoSaving, setAutoSaving] = useState(false);
 
   const handleVideoUploaded = () => {
     setAutoSaving(true);
-    formRef.current?.requestSubmit();
+    formRef.current?.requestSubmit(submitButtonRef.current ?? undefined);
   };
 
   return (
@@ -50,7 +51,9 @@ export function BlockEditorForm({
         prefix={prefix}
       />
       <div className="panel-actions">
-        <button type="submit">{autoSaving ? "Saving block..." : submitLabel}</button>
+        <button ref={submitButtonRef} type="submit">
+          {autoSaving ? "Saving block..." : submitLabel}
+        </button>
       </div>
     </form>
   );

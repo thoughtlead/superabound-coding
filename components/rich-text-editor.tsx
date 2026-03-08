@@ -1,7 +1,6 @@
 "use client";
 
 import { EditorContent, useEditor } from "@tiptap/react";
-import Link from "@tiptap/extension-link";
 import StarterKit from "@tiptap/starter-kit";
 import { useEffect, useState } from "react";
 
@@ -20,9 +19,10 @@ export function RichTextEditor({
 
   const editor = useEditor({
     extensions: [
-      StarterKit,
-      Link.configure({
-        openOnClick: false,
+      StarterKit.configure({
+        link: {
+          openOnClick: false,
+        },
       }),
     ],
     immediatelyRender: false,
