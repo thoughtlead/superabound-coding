@@ -1,6 +1,20 @@
 import { type EmailOtpType } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/server";
+import { createRouteHandlerClient } from "@/utils/supabase/route-handler";
+
+async function syncCurrentProfileEmail(
+  supabase: ReturnType<typeof createRouteHandlerClient>,
+) {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user?.email) {
+    return;
+  }
+
+  await supabase.from("profiles").update({ email: user.email }).eq("id", user.id);
+}
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
@@ -9,23 +23,27 @@ export async function GET(request: Request) {
   const code = searchParams.get("code");
   const next = searchParams.get("next") ?? "/library";
 
-  const supabase = createClient();
-
   if (tokenHash && type) {
+    const response = NextResponse.redirect(`${origin}${next}`);
+    const supabase = createRouteHandlerClient(response);
     const { error } = await supabase.auth.verifyOtp({
       type,
       token_hash: tokenHash,
     });
 
     if (!error) {
-      return NextResponse.redirect(`${origin}${next}`);
+      await syncCurrentProfileEmail(supabase);
+      return response;
     }
   }
 
   if (code) {
+    const response = NextResponse.redirect(`${origin}${next}`);
+    const supabase = createRouteHandlerClient(response);
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      return NextResponse.redirect(`${origin}${next}`);
+      await syncCurrentProfileEmail(supabase);
+      return response;
     }
   }
 

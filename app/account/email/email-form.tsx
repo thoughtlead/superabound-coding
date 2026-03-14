@@ -48,7 +48,7 @@ export function EmailForm({
     }
 
     const successMessage =
-      "Check your inbox to confirm your new email address before using it to sign in.";
+      "Check your inbox to confirm your email change. If secure email change is enabled, Supabase requires confirmation from both your current and new email addresses.";
     router.push(`${successRedirect}?message=${encodeURIComponent(successMessage)}`);
     router.refresh();
   };

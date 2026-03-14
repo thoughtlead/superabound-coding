@@ -14,8 +14,14 @@ export default async function AccountEmailPage() {
     >
       <section className="panel lesson-panel">
         <p className="form-note">
-          Update the email address used to sign in to your library account. Supabase may require
-          you to confirm the new email before it becomes active.
+          Update the email address used to sign in to your library account.
+        </p>
+        <p className="form-note">
+          If secure email change is enabled in Supabase, you must confirm the change from both your
+          current email and your new email before the sign-in address updates.
+        </p>
+        <p className="form-note">
+          After confirmation, this app will sync your profile email automatically.
         </p>
         <EmailForm
           currentEmail={user.email ?? ""}
