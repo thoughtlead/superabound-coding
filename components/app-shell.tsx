@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 type AppShellProps = {
-  title: string;
+  title: React.ReactNode;
   eyebrow?: string;
   actions?: React.ReactNode;
   showAdmin?: boolean;

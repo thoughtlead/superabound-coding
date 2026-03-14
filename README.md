@@ -63,6 +63,9 @@ cp scripts/kajabi-import.example.json scripts/my-course-import.json
    For Dropbox-hosted videos, put the shared file URL in a video block's `sourceUrl`.
    The importer will normalize Dropbox links to `dl=1`, ask Cloudflare Stream to copy the file,
    and then store the resulting Cloudflare video ID/embed URL in `lesson_blocks`.
+   For course and lesson thumbnails, keep using `thumbnailUrl` with the original JPEG/PNG URL.
+   The importer will download the image, copy it into the `library-assets` bucket, and store
+   the new Supabase public URL in `courses.thumbnail_url` or `lessons.thumbnail_url`.
 
 3. Dry run the import:
 

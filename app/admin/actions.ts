@@ -193,10 +193,18 @@ export async function updateCourseAction(
   revalidatePath("/admin/courses");
   revalidatePath(`/admin/courses/${currentSlug}`);
   if (nextSlug !== currentSlug) {
-    redirect(withMessage(`/admin/courses/${nextSlug}`, "Course updated."));
+    redirect(
+      withMessage(`/admin/courses/${nextSlug}`, "Course updated.", {
+        courseSaved: "1",
+      }),
+    );
   }
 
-  redirect(withMessage(`/admin/courses/${currentSlug}`, "Course updated."));
+  redirect(
+    withMessage(`/admin/courses/${currentSlug}`, "Course updated.", {
+      courseSaved: "1",
+    }),
+  );
 }
 
 export async function createModuleAction(courseSlug: string, courseId: string, formData: FormData) {

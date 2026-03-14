@@ -54,6 +54,10 @@ export default async function LessonPage({ params }: LessonPageProps) {
   const previousLesson = activeIndex > 0 ? orderedLessons[activeIndex - 1] : null;
   const nextLesson =
     activeIndex < orderedLessons.length - 1 ? orderedLessons[activeIndex + 1] : null;
+  const activeModule =
+    course.modules.find((moduleItem) =>
+      moduleItem.lessons.some((lesson) => lesson.slug === params.lessonSlug),
+    ) ?? null;
 
   const lessonState = await getLessonContent(activeLesson.id);
 
@@ -73,7 +77,11 @@ export default async function LessonPage({ params }: LessonPageProps) {
 
   return (
     <AppShell
-      title={lesson.title}
+      title={
+        <Link className="page-title-link" href={`/library/${course.slug}`}>
+          {course.title}
+        </Link>
+      }
       eyebrow={`${course.title} / ${activeLesson.moduleTitle}`}
       actions={
         <Link className="button button-secondary" href={`/library/${course.slug}`}>
@@ -83,11 +91,6 @@ export default async function LessonPage({ params }: LessonPageProps) {
     >
       <section className="lesson-layout">
         <div className="stack">
-          {lesson.summary ? (
-            <section className="panel lesson-panel">
-              <p className="lede">{lesson.summary}</p>
-            </section>
-          ) : null}
           {lesson.blocks.map((block) => (
             <MediaBlock key={block.id} block={block} />
           ))}
@@ -113,8 +116,39 @@ export default async function LessonPage({ params }: LessonPageProps) {
         </div>
 
         <aside className="panel sidebar-panel">
-          <h2>Up next</h2>
           <div className="stack stack-tight">
+            {activeModule ? (
+              <section className="stack stack-tight">
+                <div>
+                  <p className="eyebrow">Current module</p>
+                  <h2>{activeModule.title}</h2>
+                  {activeModule.description ? <p>{activeModule.description}</p> : null}
+                </div>
+                <div className="sidebar-lesson-list">
+                  {activeModule.lessons.map((moduleLesson) => {
+                    const isActive = moduleLesson.slug === params.lessonSlug;
+
+                    return (
+                      <Link
+                        key={moduleLesson.id}
+                        className={`sidebar-lesson-link${isActive ? " is-active" : ""}`}
+                        href={`/library/${course.slug}/${moduleLesson.slug}`}
+                      >
+                        <span className="sidebar-lesson-index">{moduleLesson.position + 1}</span>
+                        <span className="sidebar-lesson-copy">
+                          <strong>{moduleLesson.title}</strong>
+                          {moduleLesson.summary ? <span>{moduleLesson.summary}</span> : null}
+                        </span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </section>
+            ) : null}
+
+            <section className="stack stack-tight sidebar-nav-block">
+              <h3>Lesson navigation</h3>
+              <div className="stack stack-tight">
             {previousLesson ? (
               <Link
                 className="button button-secondary"
@@ -134,6 +168,8 @@ export default async function LessonPage({ params }: LessonPageProps) {
             {!previousLesson && !nextLesson ? (
               <p>This course currently has one lesson.</p>
             ) : null}
+              </div>
+            </section>
           </div>
         </aside>
       </section>

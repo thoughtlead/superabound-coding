@@ -3,6 +3,8 @@ import path from "node:path";
 import process from "node:process";
 import { createClient } from "@supabase/supabase-js";
 
+const STORAGE_BUCKET = "library-assets";
+
 async function loadLocalEnv() {
   const envPath = path.resolve(process.cwd(), ".env.local");
 
@@ -82,6 +84,111 @@ function normalizeDropboxSourceUrl(sourceUrl) {
   parsedUrl.searchParams.delete("raw");
   parsedUrl.searchParams.set("dl", "1");
   return parsedUrl.toString();
+}
+
+function normalizeRemoteAssetUrl(sourceUrl) {
+  try {
+    return normalizeDropboxSourceUrl(sourceUrl);
+  } catch {
+    return sourceUrl;
+  }
+}
+
+function slugSegment(value, fallback) {
+  return slugify(value) || fallback;
+}
+
+function getUrlBasename(sourceUrl) {
+  try {
+    const parsedUrl = new URL(sourceUrl);
+    const base = path.basename(parsedUrl.pathname);
+    return base || "asset";
+  } catch {
+    return "asset";
+  }
+}
+
+function getExtensionFromUrl(sourceUrl) {
+  const base = getUrlBasename(sourceUrl);
+  const ext = path.extname(base).toLowerCase();
+  return ext || "";
+}
+
+function getExtensionFromContentType(contentType) {
+  const normalized = String(contentType ?? "").toLowerCase().split(";")[0].trim();
+
+  if (normalized === "image/jpeg" || normalized === "image/jpg") {
+    return ".jpg";
+  }
+
+  if (normalized === "image/png") {
+    return ".png";
+  }
+
+  if (normalized === "image/webp") {
+    return ".webp";
+  }
+
+  if (normalized === "image/gif") {
+    return ".gif";
+  }
+
+  return "";
+}
+
+function buildThumbnailObjectPath(kind, context, sourceUrl, contentType) {
+  const sourceName = slugSegment(path.basename(getUrlBasename(sourceUrl), path.extname(getUrlBasename(sourceUrl))), "thumbnail");
+  const extension =
+    getExtensionFromContentType(contentType) || getExtensionFromUrl(sourceUrl) || ".jpg";
+  const courseSegment = slugSegment(context.courseSlug, "course");
+
+  if (kind === "course") {
+    return `course-thumbnails/imports/${courseSegment}/${sourceName}${extension}`;
+  }
+
+  const lessonSegment = slugSegment(context.lessonSlug, "lesson");
+  return `lesson-thumbnails/imports/${courseSegment}/${lessonSegment}-${sourceName}${extension}`;
+}
+
+async function copyThumbnailToSupabaseStorage(supabase, thumbnailUrl, context) {
+  if (!thumbnailUrl) {
+    return null;
+  }
+
+  if (thumbnailUrl.includes("/storage/v1/object/public/library-assets/")) {
+    return thumbnailUrl;
+  }
+
+  const normalizedUrl = normalizeRemoteAssetUrl(thumbnailUrl);
+  const response = await fetch(normalizedUrl);
+
+  if (!response.ok) {
+    throw new Error(
+      `Could not download thumbnail for "${context.label}": ${response.status} ${response.statusText}`,
+    );
+  }
+
+  const contentType = response.headers.get("content-type") ?? "image/jpeg";
+  if (!contentType.startsWith("image/")) {
+    throw new Error(
+      `Thumbnail for "${context.label}" is not an image. Received content-type "${contentType}".`,
+    );
+  }
+
+  const objectPath = buildThumbnailObjectPath(context.kind, context, normalizedUrl, contentType);
+  const fileBuffer = Buffer.from(await response.arrayBuffer());
+
+  const { error: uploadError } = await supabase.storage.from(STORAGE_BUCKET).upload(objectPath, fileBuffer, {
+    contentType,
+    upsert: true,
+  });
+
+  if (uploadError) {
+    throw new Error(`Could not upload thumbnail for "${context.label}": ${uploadError.message}`);
+  }
+
+  const { data } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(objectPath);
+  return data.publicUrl;
 }
 
 function normalizeBlock(block, index) {
@@ -285,10 +392,28 @@ async function resolveLessonBlocks(lesson, context) {
   return resolvedBlocks;
 }
 
+async function resolveCourseThumbnail(supabase, course) {
+  return copyThumbnailToSupabaseStorage(supabase, course.thumbnail_url, {
+    kind: "course",
+    label: course.title,
+    courseSlug: course.slug,
+  });
+}
+
+async function resolveLessonThumbnail(supabase, course, lesson) {
+  return copyThumbnailToSupabaseStorage(supabase, lesson.thumbnail_url, {
+    kind: "lesson",
+    label: lesson.title,
+    courseSlug: course.slug,
+    lessonSlug: lesson.slug,
+  });
+}
+
 async function importCourses(supabase, courses, cloudflareConfig) {
   const warnings = [];
 
   for (const course of courses) {
+    const resolvedCourseThumbnailUrl = await resolveCourseThumbnail(supabase, course);
     const { data: upsertedCourse, error: courseError } = await supabase
       .from("courses")
       .upsert(
@@ -297,7 +422,7 @@ async function importCourses(supabase, courses, cloudflareConfig) {
           title: course.title,
           subtitle: course.subtitle,
           description: course.description,
-          thumbnail_url: course.thumbnail_url,
+          thumbnail_url: resolvedCourseThumbnailUrl,
           status: course.status,
           course_type: course.course_type,
         },
@@ -347,6 +472,7 @@ async function importCourses(supabase, courses, cloudflareConfig) {
       }
 
       for (const lesson of moduleItem.lessons) {
+        const resolvedLessonThumbnailUrl = await resolveLessonThumbnail(supabase, course, lesson);
         const { data: createdLesson, error: lessonError } = await supabase
           .from("lessons")
           .insert({
@@ -354,7 +480,7 @@ async function importCourses(supabase, courses, cloudflareConfig) {
             slug: lesson.slug,
             title: lesson.title,
             summary: lesson.summary,
-            thumbnail_url: lesson.thumbnail_url,
+            thumbnail_url: resolvedLessonThumbnailUrl,
             position: lesson.position,
             status: lesson.status,
           })
