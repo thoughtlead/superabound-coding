@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useRef, useState } from "react";
 import { BlockEditorFields } from "@/components/block-editor-fields";
 
@@ -12,6 +13,7 @@ type BlockEditorFormProps = {
   initialPosition?: number;
   initialTitle?: string | null;
   initialType?: "video" | "audio" | "rich_text" | "download";
+  secondaryActions?: ReactNode;
   prefix: string;
   submitLabel: string;
 };
@@ -25,6 +27,7 @@ export function BlockEditorForm({
   initialPosition,
   initialTitle,
   initialType,
+  secondaryActions,
   prefix,
   submitLabel,
 }: BlockEditorFormProps) {
@@ -50,10 +53,11 @@ export function BlockEditorForm({
         onVideoUploaded={handleVideoUploaded}
         prefix={prefix}
       />
-      <div className="panel-actions">
+      <div className="panel-actions editor-form-actions">
         <button ref={submitButtonRef} type="submit">
           {autoSaving ? "Saving block..." : submitLabel}
         </button>
+        {secondaryActions}
       </div>
     </form>
   );

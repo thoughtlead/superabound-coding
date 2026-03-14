@@ -593,6 +593,14 @@ form {
   color: var(--text);
 }
 
+.rich-text a,
+.rich-editor-surface a {
+  color: #1a5fd0;
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 2px;
+}
+
 .download-list {
   display: grid;
   gap: 12px;
@@ -628,6 +636,11 @@ form {
   flex-wrap: wrap;
   align-items: center;
   gap: 12px;
+}
+
+.editor-form-actions {
+  justify-content: flex-start;
+  margin-top: 6px;
 }
 
 .lesson-row-admin {
@@ -690,32 +703,53 @@ form {
 
 .rich-editor {
   display: grid;
-  gap: 12px;
+  gap: 14px;
 }
 
 .rich-editor-toolbar {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
   gap: 10px;
-  padding: 10px;
+  padding: 12px;
   border: 1px solid var(--line);
-  border-radius: 16px;
-  background: var(--panel-strong);
+  border-radius: 18px 18px 0 0;
+  background: linear-gradient(180deg, #fcfcfd, #f4f4f8);
 }
 
-.rich-editor-toolbar button {
+.rich-editor-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.rich-editor-button {
   min-height: 38px;
-  padding: 8px 13px;
-  border-radius: 11px;
-  font-size: 0.9rem;
+  padding: 8px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--text);
+  font-size: 0.88rem;
+  font-weight: 700;
   box-shadow: none;
+}
+
+.rich-editor-button:hover {
+  background: #fff;
+  border-color: rgba(37, 33, 31, 0.22);
+  box-shadow: none;
+}
+
+.rich-editor-button.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
 }
 
 .rich-editor-surface {
   min-height: 220px;
   border: 1px solid var(--line-strong);
-  border-radius: 16px;
-  padding: 18px;
+  border-radius: 0 0 18px 18px;
+  padding: 22px;
   background: #fff;
   color: var(--text);
   line-height: 1.6;
@@ -738,10 +772,23 @@ form {
   font-size: 1.5rem;
 }
 
+.rich-editor-surface h3 {
+  margin: 0 0 10px;
+  font-size: 1.2rem;
+}
+
 .rich-editor-surface p,
 .rich-editor-surface ul,
 .rich-editor-surface ol {
   margin: 0 0 12px;
+}
+
+.rich-editor-surface blockquote {
+  margin: 0 0 14px;
+  padding-left: 16px;
+  border-left: 3px solid rgba(37, 33, 31, 0.18);
+  color: var(--muted);
+  font-style: italic;
 }
 
 .meta-grid {

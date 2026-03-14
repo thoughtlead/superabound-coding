@@ -394,7 +394,11 @@ export async function updateBlockAction(
   }
 
   revalidatePath(`/admin/lessons/${lessonId}`);
-  redirect(withMessage(`/admin/lessons/${lessonId}`, "Content block updated."));
+  redirect(
+    withMessage(`/admin/lessons/${lessonId}`, "Content block updated.", {
+      blockUpdated: blockId,
+    }),
+  );
 }
 
 export async function deleteBlockAction(lessonId: string, blockId: string) {

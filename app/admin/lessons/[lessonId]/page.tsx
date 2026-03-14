@@ -23,6 +23,7 @@ type AdminLessonPageProps = {
   searchParams?: {
     message?: string;
     _r?: string;
+    blockUpdated?: string;
   };
 };
 
@@ -112,11 +113,15 @@ export default async function AdminLessonPage({
         {lesson.blocks.map((block) => {
           const updateBlock = updateBlockAction.bind(null, lesson.id, block.id);
           const deleteBlock = deleteBlockAction.bind(null, lesson.id, block.id);
+          const showBlockSaved = searchParams?.blockUpdated === block.id;
 
           return (
             <section key={block.id} className="panel lesson-panel">
               <div className="row-spread">
-                <h2>Content block</h2>
+                <div className="inline-actions">
+                  <h2>Content block</h2>
+                  {showBlockSaved ? <span className="stat-chip">Block saved</span> : null}
+                </div>
                 <span className="pill">{block.type}</span>
               </div>
               <BlockEditorForm
@@ -129,13 +134,15 @@ export default async function AdminLessonPage({
                 initialTitle={block.title}
                 initialType={block.type}
                 prefix={`block-${block.id}`}
+                secondaryActions={
+                  <form action={deleteBlock}>
+                    <button className="button button-secondary" type="submit">
+                      Delete block
+                    </button>
+                  </form>
+                }
                 submitLabel="Save block"
               />
-              <form action={deleteBlock}>
-                <button className="button button-secondary" type="submit">
-                  Delete block
-                </button>
-              </form>
             </section>
           );
         })}
