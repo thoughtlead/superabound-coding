@@ -1,7 +1,7 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
 
-import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useId, useRef, useState } from "react";
 import * as tus from "tus-js-client";
 
 type CloudflareVideoUploadFieldProps = {
@@ -55,10 +55,12 @@ function formatProcessingMessage(status: CloudflareVideoStatus) {
 export function CloudflareVideoUploadField({
   onUploaded,
 }: CloudflareVideoUploadFieldProps) {
+  const fileInputId = useId();
   const [message, setMessage] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState<number | null>(null);
   const [processingStatus, setProcessingStatus] = useState<CloudflareVideoStatus | null>(null);
+  const [selectedFileName, setSelectedFileName] = useState("");
   const uploadRef = useRef<tus.Upload | null>(null);
   const uploadedVideoRef = useRef<UploadedVideoValues | null>(null);
   const isMountedRef = useRef(true);
@@ -114,6 +116,7 @@ export function CloudflareVideoUploadField({
       return;
     }
 
+    setSelectedFileName(file.name);
     setUploading(true);
     setMessage(null);
     setProgress(0);
@@ -238,7 +241,17 @@ export function CloudflareVideoUploadField({
     <div className="upload-field">
       <label>Cloudflare video upload</label>
       <div className="upload-actions">
-        <input accept="video/*" onChange={handleFileChange} type="file" />
+        <input
+          accept="video/*"
+          className="file-picker-input"
+          id={fileInputId}
+          onChange={handleFileChange}
+          type="file"
+        />
+        <label className="button button-secondary file-picker-button" htmlFor={fileInputId}>
+          Choose video
+        </label>
+        <span className="file-picker-name">{selectedFileName || "No file selected"}</span>
         {uploading ? <span className="form-note">Uploading to Cloudflare...</span> : null}
         {uploading ? (
           <button className="button button-secondary" onClick={handleCancelUpload} type="button">

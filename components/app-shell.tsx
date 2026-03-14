@@ -25,7 +25,8 @@ export function AppShell({
         <nav className="nav">
           <Link href="/library">Library</Link>
           <Link href="/account">Account</Link>
-          {showAdmin ? <Link href="/admin/courses">Admin</Link> : null}
+          {showAdmin ? <Link href="/admin/courses">Courses</Link> : null}
+          {showAdmin ? <Link href="/admin/enrollments">Enrollments</Link> : null}
         </nav>
       </aside>
       <div className="shell-main">

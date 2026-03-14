@@ -159,6 +159,29 @@ export type AdminLessonEditor = LessonContent & {
   courseTitle: string;
 };
 
+export type AdminEnrollmentUser = {
+  id: string;
+  email: string;
+  fullName: string | null;
+  role: "admin" | "member";
+  createdAt: string;
+};
+
+export type AdminEnrollmentCourse = {
+  id: string;
+  slug: string;
+  title: string;
+  status: "draft" | "published";
+};
+
+export type AdminEnrollment = {
+  id: string;
+  status: "active" | "revoked";
+  createdAt: string;
+  course: AdminEnrollmentCourse;
+  user: AdminEnrollmentUser;
+};
+
 function isSetupError(error: QueryError | null) {
   return error?.code === "42P01" || error?.code === "42703";
 }
@@ -536,5 +559,126 @@ export async function getAdminCourse(courseSlug: string) {
   return {
     setupRequired: state.setupRequired,
     course: state.data ? mapCourse(state.data) : null,
+  };
+}
+
+export async function getAdminEnrollmentDashboard() {
+  const supabase = createClient();
+  const [coursesResponse, profilesResponse, enrollmentsResponse] = await Promise.all([
+    supabase
+      .from("courses")
+      .select("id, slug, title, status")
+      .order("title", { ascending: true }),
+    supabase
+      .from("profiles")
+      .select("id, email, full_name, role, created_at")
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("course_enrollments")
+      .select(
+        `
+          id,
+          status,
+          created_at,
+          course:courses!inner(
+            id,
+            slug,
+            title,
+            status
+          ),
+          user:profiles!inner(
+            id,
+            email,
+            full_name,
+            role,
+            created_at
+          )
+        `,
+      )
+      .order("created_at", { ascending: false }),
+  ]);
+
+  const courseState = toQueryState(
+    coursesResponse.data as Array<{
+      id: string;
+      slug: string;
+      title: string;
+      status: "draft" | "published";
+    }> | null,
+    coursesResponse.error,
+  );
+  const profileState = toQueryState(
+    profilesResponse.data as Array<{
+      id: string;
+      email: string;
+      full_name: string | null;
+      role: "admin" | "member";
+      created_at: string;
+    }> | null,
+    profilesResponse.error,
+  );
+  const enrollmentState = toQueryState(
+    enrollmentsResponse.data as Array<{
+      id: string;
+      status: "active" | "revoked";
+      created_at: string;
+      course: {
+        id: string;
+        slug: string;
+        title: string;
+        status: "draft" | "published";
+      } | null;
+      user: {
+        id: string;
+        email: string;
+        full_name: string | null;
+        role: "admin" | "member";
+        created_at: string;
+      } | null;
+    }> | null,
+    enrollmentsResponse.error,
+  );
+
+  return {
+    setupRequired:
+      courseState.setupRequired || profileState.setupRequired || enrollmentState.setupRequired,
+    courses: (courseState.data ?? []).map((course) => ({
+      id: course.id,
+      slug: course.slug,
+      title: course.title,
+      status: course.status,
+    })),
+    users: (profileState.data ?? []).map((profile) => ({
+      id: profile.id,
+      email: profile.email,
+      fullName: profile.full_name,
+      role: profile.role,
+      createdAt: profile.created_at,
+    })),
+    enrollments: (enrollmentState.data ?? [])
+      .filter(
+        (enrollment): enrollment is NonNullable<typeof enrollment> & {
+          course: NonNullable<typeof enrollment.course>;
+          user: NonNullable<typeof enrollment.user>;
+        } => Boolean(enrollment.course && enrollment.user),
+      )
+      .map((enrollment) => ({
+        id: enrollment.id,
+        status: enrollment.status,
+        createdAt: enrollment.created_at,
+        course: {
+          id: enrollment.course.id,
+          slug: enrollment.course.slug,
+          title: enrollment.course.title,
+          status: enrollment.course.status,
+        },
+        user: {
+          id: enrollment.user.id,
+          email: enrollment.user.email,
+          fullName: enrollment.user.full_name,
+          role: enrollment.user.role,
+          createdAt: enrollment.user.created_at,
+        },
+      })),
   };
 }

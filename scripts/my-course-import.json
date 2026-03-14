@@ -1,0 +1,81 @@
+{
+  "courses": [
+    {
+      "title": "Tarot for Whole Life Success",
+      "slug": "tarot-for-whole-life-success",
+      "subtitle": "With Master Coach Erin Aquin",
+      "description": "Unlock the power of Tarot to thrive in your career, relationships, and personal growth. This course offers practical Tarot techniques for real-life success.",
+      "thumbnailUrl": "https://kajabi-storefronts-production.kajabi-cdn.com/kajabi-storefronts-production/file-uploads/site/2147517621/images/c352a5-3731-5300-f422-fc2d4cabe4b5_99b83716-6b38-4816-a6ca-0f5c0535a80f.jpg",
+      "status": "published",
+      "courseType": "evergreen",
+      "modules": [
+        {
+          "title": "The Workshop",
+          "description": "Orientation module",
+          "status": "published",
+          "lessons": [
+            {
+              "title": "Introduction and Clearing Your Deck",
+              "slug": "introduction-and-clearing-your-deck",
+              "summary": "Start here and join me in getting intentional with your deck for this work. Download the guidebook in the 'Download' section on this page.",
+              "thumbnailUrl": "https://s3.amazonaws.com/kajabi-storefronts-production//site/2147517621/products/8b5d21cc-620f-42cd-b349-e9338157f7dd.jpg",
+              "status": "published",
+              "blocks": [
+                {
+                  "type": "video",
+                  "title": "Lesson video",
+                  "mediaProvider": "cloudflare-stream",
+                  "sourceUrl": "https://www.dropbox.com/scl/fi/l6z2lbl516nfkyhm1d71h/Tarot-module-1.mov?rlkey=i75hmimpk2ksn6bqj90oopq1v&st=e35i6cwf&dl=0"
+                },
+                {
+                  "type": "rich_text",
+                  "title": "Lesson notes",
+                  "body": "<p>Start here and join me in getting intentional with your deck for this work.<br/> Download the guidebook in the 'Download' section on this page.</p>"
+                }
+              ],
+              "downloads": [
+                {
+                  "title": "Guidebook PDF",
+                  "fileUrl": "https://kajabi-storefronts-production.s3.amazonaws.com/file-uploads/posts/2194463374/downloads/bdd54ea-832-d7da-12d7-8b5d1063c6d7_Tarot_for_Whole_Life_Success_2026_1_.pdf?response-content-disposition=attachment%3B%20filename%3DTarot_for_Whole_Life_Success_2026_1_.pdf&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAI4TIKYMSB4PQMFBA%2F20260314%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20260314T185408Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=a3c22036ce54f24944e287d130b75c709570a9548ddf703eacf54db266ffb678"
+                }
+              ]
+            },
+            {
+              "title": "The Spreads",
+              "summary": "Explore different Tarot spreads and their meanings.",
+              "slug": "the-spreads",
+              "thumbnailUrl": "https://s3.amazonaws.com/kajabi-storefronts-production/file-uploads/site/2147517621/products/f40a17-313-eb0c-ccf1-f362d46e073_556407676f8972b326ee76d51818296683d5c7e7.jpg",
+              "status": "published",
+              "blocks": [
+                {
+                  "type": "video",
+                  "title": "Module 2 video",
+                  "mediaProvider": "cloudflare-stream",
+                  "sourceUrl": "https://www.dropbox.com/scl/fi/bifi4tthzxwa47ymbzi2w/c316aa-a51c-c7-1e2f-85600882c005_Tarotpt2.mov?rlkey=9tkg9x33sg9g0hcu2zchq30qn&st=66rm6oq6&dl=0"
+                },
+                {
+                  "type": "rich_text",
+                  "title": "Module 2 notes",
+                  "body": "<p>Dive into some of the spreads from the workbook here and learn a few ways to interpret your cards.<br />Download the workbook in the \"Downloads\" section on this page.<br /><br />You can email <a href=\"mailto:erin@besuperabound.com\">erin@besuperabound.com</a>&nbsp;with any questions that come up from now until the end of May 2026 or post in the comments below</p>"
+                }
+              ],
+              "downloads": [
+                {
+                  "title": "Class 2 download",
+                  "fileUrl": "https://kajabi-storefronts-production.s3.amazonaws.com/file-uploads/posts/2194465420/downloads/1141ed-db0d-ea55-2c0d-6d860a7abda_Tarot_for_Whole_Life_Success_2026_1_.pdf?response-content-disposition=attachment%3B%20filename%3DTarot_for_Whole_Life_Success_2026_1_.pdf&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAI4TIKYMSB4PQMFBA%2F20260314%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20260314T192426Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=8ce5934c991c638378c94785c2ca58386d433fb31fd63acdfb1470946ce9dcb8",
+                  "position": 0
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "enrollments": [
+        {
+          "email": "erin@besuperabound.com",
+          "status": "active"
+        }
+      ]
+    }
+  ]
+}

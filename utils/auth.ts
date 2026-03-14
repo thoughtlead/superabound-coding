@@ -7,12 +7,14 @@ export type Profile = {
   id: string;
   role: AppRole;
   full_name: string | null;
+  email: string;
 };
 
 type ProfileRow = {
   id: string;
   role: AppRole;
   full_name: string | null;
+  email: string;
 };
 
 export async function requireUser() {
@@ -32,7 +34,7 @@ export async function getCurrentProfile(userId: string) {
   const supabase = createClient();
   const { data, error } = await supabase
     .from("profiles")
-    .select("id, role, full_name")
+    .select("id, role, full_name, email")
     .eq("id", userId)
     .maybeSingle();
 

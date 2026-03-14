@@ -1,0 +1,54 @@
+{
+  "courses": [
+    {
+      "title": "Tarot for Whole Life Success",
+      "slug": "tarot-for-whole-life-success",
+      "subtitle": "Example Kajabi migration payload",
+      "description": "Use this file shape to map one Kajabi course into the new library.",
+      "thumbnailUrl": "https://example.com/course-thumbnail.jpg",
+      "status": "published",
+      "courseType": "evergreen",
+      "modules": [
+        {
+          "title": "The Workshop",
+          "description": "Orientation module",
+          "status": "published",
+          "lessons": [
+            {
+              "title": "Introduction and Clearing Your Deck",
+              "slug": "introduction-and-clearing-your-deck",
+              "summary": "A migrated Kajabi lesson example.",
+              "thumbnailUrl": "https://example.com/lesson-thumbnail.jpg",
+              "status": "published",
+              "blocks": [
+                {
+                  "type": "video",
+                  "title": "Lesson video",
+                  "mediaProvider": "cloudflare-stream",
+                  "sourceUrl": "https://www.dropbox.com/scl/fi/example/lesson-video.mp4?rlkey=abc123&dl=1"
+                },
+                {
+                  "type": "rich_text",
+                  "title": "Lesson notes",
+                  "body": "<p>Imported rich text from Kajabi.</p>"
+                }
+              ],
+              "downloads": [
+                {
+                  "title": "Guidebook PDF",
+                  "fileUrl": "https://example.com/guidebook.pdf"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "enrollments": [
+        {
+          "email": "member@example.com",
+          "status": "active"
+        }
+      ]
+    }
+  ]
+}

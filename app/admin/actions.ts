@@ -425,6 +425,59 @@ export async function createDownloadAction(lessonId: string, formData: FormData)
   redirect(withMessage(`/admin/lessons/${lessonId}`, "Download added."));
 }
 
+export async function createEnrollmentAction(formData: FormData) {
+  const { supabase } = await requireAdmin();
+  const courseId = getValue(formData, "courseId");
+  const userId = getValue(formData, "userId");
+
+  if (!courseId || !userId) {
+    redirect(withMessage("/admin/enrollments", "Choose both a user and a course."));
+  }
+
+  const { error } = await supabase.from("course_enrollments").upsert(
+    {
+      course_id: courseId,
+      user_id: userId,
+      status: "active",
+    },
+    {
+      onConflict: "course_id,user_id",
+    },
+  );
+
+  if (error) {
+    redirect(withMessage("/admin/enrollments", error.message));
+  }
+
+  revalidatePath("/admin/enrollments");
+  revalidatePath("/library");
+  redirect(withMessage("/admin/enrollments", "Enrollment granted."));
+}
+
+export async function updateEnrollmentStatusAction(
+  enrollmentId: string,
+  nextStatus: "active" | "revoked",
+) {
+  const { supabase } = await requireAdmin();
+  const { error } = await supabase
+    .from("course_enrollments")
+    .update({ status: nextStatus })
+    .eq("id", enrollmentId);
+
+  if (error) {
+    redirect(withMessage("/admin/enrollments", error.message));
+  }
+
+  revalidatePath("/admin/enrollments");
+  revalidatePath("/library");
+  redirect(
+    withMessage(
+      "/admin/enrollments",
+      nextStatus === "active" ? "Enrollment restored." : "Enrollment revoked.",
+    ),
+  );
+}
+
 export async function updateDownloadAction(
   lessonId: string,
   downloadId: string,

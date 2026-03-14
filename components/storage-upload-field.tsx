@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useId, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 
 const BUCKET = "library-assets";
@@ -36,8 +36,10 @@ export function StorageUploadField({
   type = "url",
   value: controlledValue,
 }: StorageUploadFieldProps) {
+  const fileInputId = useId();
   const [internalValue, setInternalValue] = useState(initialValue ?? "");
   const [message, setMessage] = useState<string | null>(null);
+  const [selectedFileName, setSelectedFileName] = useState("");
   const [uploading, setUploading] = useState(false);
   const value = controlledValue ?? internalValue;
 
@@ -62,6 +64,7 @@ export function StorageUploadField({
       return;
     }
 
+    setSelectedFileName(file.name);
     setUploading(true);
     setMessage(null);
 
@@ -97,7 +100,19 @@ export function StorageUploadField({
       />
       {allowUpload ? (
         <div className="upload-actions">
-          <input accept={accept} onChange={handleFileChange} type="file" />
+          <input
+            accept={accept}
+            className="file-picker-input"
+            id={fileInputId}
+            onChange={handleFileChange}
+            type="file"
+          />
+          <label className="button button-secondary file-picker-button" htmlFor={fileInputId}>
+            Choose file
+          </label>
+          <span className="file-picker-name">
+            {selectedFileName || "No file selected"}
+          </span>
           {uploading ? <span className="form-note">Uploading...</span> : null}
         </div>
       ) : null}
