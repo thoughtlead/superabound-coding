@@ -478,6 +478,28 @@ export async function updateEnrollmentStatusAction(
   );
 }
 
+export async function updateUserNameAction(userId: string, formData: FormData) {
+  const { supabase } = await requireAdmin();
+  const fullName = getValue(formData, "fullName");
+
+  if (!fullName) {
+    redirect(withMessage("/admin/enrollments", "Name is required."));
+  }
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ full_name: fullName })
+    .eq("id", userId);
+
+  if (error) {
+    redirect(withMessage("/admin/enrollments", error.message));
+  }
+
+  revalidatePath("/admin/enrollments");
+  revalidatePath("/account");
+  redirect(withMessage("/admin/enrollments", "Member name updated."));
+}
+
 export async function updateDownloadAction(
   lessonId: string,
   downloadId: string,

@@ -1,4 +1,8 @@
-import { createEnrollmentAction, updateEnrollmentStatusAction } from "@/app/admin/actions";
+import {
+  createEnrollmentAction,
+  updateEnrollmentStatusAction,
+  updateUserNameAction,
+} from "@/app/admin/actions";
 import { AppShell } from "@/components/app-shell";
 import { EmptyState } from "@/components/empty-state";
 import { SetupState } from "@/components/setup-state";
@@ -112,6 +116,8 @@ export default async function AdminEnrollmentsPage({
       {!setupRequired && enrollmentsByUser.length > 0 ? (
         <section className="stack">
           {enrollmentsByUser.map((group) => {
+            const updateUserName = updateUserNameAction.bind(null, group.user.id);
+
             return (
               <article key={group.user.id} className="panel lesson-panel">
                 <div className="row-spread">
@@ -121,6 +127,23 @@ export default async function AdminEnrollmentsPage({
                       <h2>{group.user.fullName ?? group.user.email}</h2>
                       <p>{group.user.email}</p>
                     </div>
+                    <form action={updateUserName} className="editor-form stack stack-tight">
+                      <div>
+                        <label htmlFor={`member-name-${group.user.id}`}>Display name</label>
+                        <input
+                          defaultValue={group.user.fullName ?? ""}
+                          id={`member-name-${group.user.id}`}
+                          name="fullName"
+                          required
+                          type="text"
+                        />
+                      </div>
+                      <div className="panel-actions">
+                        <button className="button button-secondary" type="submit">
+                          Save member name
+                        </button>
+                      </div>
+                    </form>
                   </div>
                   <div className="stack stack-tight">
                     <span className="stat-chip">{group.enrollments.length} courses</span>
