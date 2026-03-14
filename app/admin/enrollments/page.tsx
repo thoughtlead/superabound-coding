@@ -16,13 +16,45 @@ export default async function AdminEnrollmentsPage({
 }: AdminEnrollmentsPageProps) {
   await requireAdmin();
   const { courses, users, enrollments, setupRequired } = await getAdminEnrollmentDashboard();
+  const enrollmentsByUser = Array.from(
+    enrollments.reduce((groups, enrollment) => {
+      const existing = groups.get(enrollment.user.id);
+
+      if (existing) {
+        existing.enrollments.push(enrollment);
+        return groups;
+      }
+
+      groups.set(enrollment.user.id, {
+        user: enrollment.user,
+        enrollments: [enrollment],
+      });
+      return groups;
+    }, new Map<
+      string,
+      {
+        user: (typeof enrollments)[number]["user"];
+        enrollments: typeof enrollments;
+      }
+    >()),
+  ).map(([, group]) => ({
+    user: group.user,
+    enrollments: group.enrollments.sort((left, right) =>
+      left.course.title.localeCompare(right.course.title),
+    ),
+  }));
 
   return (
     <AppShell
       title="Enrollments"
       eyebrow="Admin"
       showAdmin
-      actions={<span className="stat-chip">{enrollments.length} records</span>}
+      actions={
+        <>
+          <span className="stat-chip">{enrollmentsByUser.length} members</span>
+          <span className="stat-chip">{enrollments.length} records</span>
+        </>
+      }
     >
       {searchParams?.message ? <p className="form-status">{searchParams.message}</p> : null}
       {setupRequired ? <SetupState /> : null}
@@ -77,43 +109,52 @@ export default async function AdminEnrollmentsPage({
         />
       ) : null}
 
-      {!setupRequired && enrollments.length > 0 ? (
+      {!setupRequired && enrollmentsByUser.length > 0 ? (
         <section className="stack">
-          {enrollments.map((enrollment) => {
-            const toggleEnrollment = updateEnrollmentStatusAction.bind(
-              null,
-              enrollment.id,
-              enrollment.status === "active" ? "revoked" : "active",
-            );
-
+          {enrollmentsByUser.map((group) => {
             return (
-              <article key={enrollment.id} className="panel lesson-panel">
+              <article key={group.user.id} className="panel lesson-panel">
                 <div className="row-spread">
                   <div className="stack stack-tight">
                     <div>
                       <p className="eyebrow">Member</p>
-                      <h2>{enrollment.user.fullName ?? enrollment.user.email}</h2>
-                      <p>{enrollment.user.email}</p>
-                    </div>
-                    <div>
-                      <p className="eyebrow">Course</p>
-                      <p>{enrollment.course.title}</p>
+                      <h2>{group.user.fullName ?? group.user.email}</h2>
+                      <p>{group.user.email}</p>
                     </div>
                   </div>
                   <div className="stack stack-tight">
-                    <span className="pill">{enrollment.status}</span>
-                    <span className="stat-chip">{enrollment.course.status}</span>
+                    <span className="stat-chip">{group.enrollments.length} courses</span>
                   </div>
                 </div>
-                <div className="panel-actions">
-                  <form action={toggleEnrollment}>
-                    <button
-                      className="button button-secondary"
-                      type="submit"
-                    >
-                      {enrollment.status === "active" ? "Revoke" : "Restore"}
-                    </button>
-                  </form>
+                <div className="stack stack-tight">
+                  {group.enrollments.map((enrollment) => {
+                    const toggleEnrollment = updateEnrollmentStatusAction.bind(
+                      null,
+                      enrollment.id,
+                      enrollment.status === "active" ? "revoked" : "active",
+                    );
+
+                    return (
+                      <div key={enrollment.id} className="lesson-row">
+                        <div>
+                          <div>
+                            <h3>{enrollment.course.title}</h3>
+                            <p>
+                              {enrollment.course.status} course · {enrollment.status} access
+                            </p>
+                          </div>
+                        </div>
+                        <div className="inline-actions">
+                          <span className="pill">{enrollment.status}</span>
+                          <form action={toggleEnrollment}>
+                            <button className="button button-secondary" type="submit">
+                              {enrollment.status === "active" ? "Revoke" : "Restore"}
+                            </button>
+                          </form>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </article>
             );
