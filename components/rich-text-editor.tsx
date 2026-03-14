@@ -18,6 +18,11 @@ type ToolbarButton = {
   label: string;
 };
 
+type ToolbarGroupProps = {
+  children: React.ReactNode;
+  label: string;
+};
+
 function ToolbarButton({ action, isActive = false, label }: ToolbarButton) {
   return (
     <button
@@ -28,6 +33,15 @@ function ToolbarButton({ action, isActive = false, label }: ToolbarButton) {
     >
       {label}
     </button>
+  );
+}
+
+function ToolbarGroup({ children, label }: ToolbarGroupProps) {
+  return (
+    <div className="rich-editor-toolbar-section">
+      <span className="rich-editor-toolbar-label">{label}</span>
+      <div className="rich-editor-group">{children}</div>
+    </div>
   );
 }
 
@@ -80,7 +94,7 @@ export function RichTextEditor({
     return null;
   }
 
-  const setLink = () => {
+  const editLink = () => {
     const previousUrl = editor.getAttributes("link").href ?? "";
     const href = window.prompt("Enter link URL", previousUrl);
 
@@ -104,7 +118,7 @@ export function RichTextEditor({
       <input name={name} readOnly type="hidden" value={value} />
 
       <div className="rich-editor-toolbar" role="toolbar" aria-label="Rich text formatting">
-        <div className="rich-editor-group">
+        <ToolbarGroup label="Structure">
           <ToolbarButton
             action={() => editor.chain().focus().setParagraph().run()}
             isActive={editor.isActive("paragraph")}
@@ -113,16 +127,21 @@ export function RichTextEditor({
           <ToolbarButton
             action={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
             isActive={editor.isActive("heading", { level: 2 })}
-            label="Heading"
+            label="Heading 2"
+          />
+          <ToolbarButton
+            action={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+            isActive={editor.isActive("heading", { level: 3 })}
+            label="Heading 3"
           />
           <ToolbarButton
             action={() => editor.chain().focus().toggleBlockquote().run()}
             isActive={editor.isActive("blockquote")}
             label="Quote"
           />
-        </div>
+        </ToolbarGroup>
 
-        <div className="rich-editor-group">
+        <ToolbarGroup label="Emphasis">
           <ToolbarButton
             action={() => editor.chain().focus().toggleBold().run()}
             isActive={editor.isActive("bold")}
@@ -138,9 +157,9 @@ export function RichTextEditor({
             isActive={editor.isActive("underline")}
             label="Underline"
           />
-        </div>
+        </ToolbarGroup>
 
-        <div className="rich-editor-group">
+        <ToolbarGroup label="Lists">
           <ToolbarButton
             action={() => editor.chain().focus().toggleBulletList().run()}
             isActive={editor.isActive("bulletList")}
@@ -151,18 +170,26 @@ export function RichTextEditor({
             isActive={editor.isActive("orderedList")}
             label="Numbered list"
           />
-        </div>
+        </ToolbarGroup>
 
-        <div className="rich-editor-group">
+        <ToolbarGroup label="Links">
           <ToolbarButton
-            action={setLink}
+            action={() => {
+              editor.chain().focus().extendMarkRange("link").run();
+              editLink();
+            }}
             isActive={editor.isActive("link")}
-            label="Add link"
+            label="Edit link"
           />
           <ToolbarButton
-            action={() => editor.chain().focus().unsetLink().run()}
+            action={() => {
+              editor.chain().focus().unsetLink().run();
+            }}
             label="Remove link"
           />
+        </ToolbarGroup>
+
+        <ToolbarGroup label="Clean up">
           <ToolbarButton
             action={() =>
               editor
@@ -174,13 +201,10 @@ export function RichTextEditor({
             }
             label="Clear formatting"
           />
-        </div>
+        </ToolbarGroup>
       </div>
 
       <EditorContent editor={editor} />
-      <p className="form-note">
-        This is a live rich text editor. Links render blue and underlined in the lesson view.
-      </p>
     </div>
   );
 }

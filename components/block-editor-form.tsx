@@ -14,6 +14,7 @@ type BlockEditorFormProps = {
   initialTitle?: string | null;
   initialType?: "video" | "audio" | "rich_text" | "download";
   secondaryActions?: ReactNode;
+  statusMessage?: string;
   prefix: string;
   submitLabel: string;
 };
@@ -28,6 +29,7 @@ export function BlockEditorForm({
   initialTitle,
   initialType,
   secondaryActions,
+  statusMessage,
   prefix,
   submitLabel,
 }: BlockEditorFormProps) {
@@ -53,6 +55,7 @@ export function BlockEditorForm({
         onVideoUploaded={handleVideoUploaded}
         prefix={prefix}
       />
+      {statusMessage ? <p className="form-status form-status-inline">{statusMessage}</p> : null}
       <div className="panel-actions editor-form-actions">
         <button ref={submitButtonRef} type="submit">
           {autoSaving ? "Saving block..." : submitLabel}

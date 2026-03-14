@@ -118,10 +118,7 @@ export default async function AdminLessonPage({
           return (
             <section key={block.id} className="panel lesson-panel">
               <div className="row-spread">
-                <div className="inline-actions">
-                  <h2>Content block</h2>
-                  {showBlockSaved ? <span className="stat-chip">Block saved</span> : null}
-                </div>
+                <h2>Content block</h2>
                 <span className="pill">{block.type}</span>
               </div>
               <BlockEditorForm
@@ -134,6 +131,7 @@ export default async function AdminLessonPage({
                 initialTitle={block.title}
                 initialType={block.type}
                 prefix={`block-${block.id}`}
+                statusMessage={showBlockSaved ? "Block saved" : undefined}
                 secondaryActions={
                   <form action={deleteBlock}>
                     <button className="button button-secondary" type="submit">

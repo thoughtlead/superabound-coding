@@ -707,28 +707,50 @@ form {
 }
 
 .rich-editor-toolbar {
-  display: grid;
-  gap: 10px;
-  padding: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: flex-end;
+  padding: 14px 16px;
   border: 1px solid var(--line);
   border-radius: 18px 18px 0 0;
   background: linear-gradient(180deg, #fcfcfd, #f4f4f8);
 }
 
+.rich-editor-toolbar-section {
+  display: grid;
+  gap: 7px;
+  padding-right: 14px;
+  border-right: 1px solid rgba(29, 27, 25, 0.08);
+}
+
+.rich-editor-toolbar-section:last-child {
+  padding-right: 0;
+  border-right: 0;
+}
+
+.rich-editor-toolbar-label {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .rich-editor-group {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 }
 
 .rich-editor-button {
-  min-height: 38px;
-  padding: 8px 12px;
+  min-height: 34px;
+  padding: 7px 11px;
   border: 1px solid var(--line-strong);
-  border-radius: 10px;
+  border-radius: 9px;
   background: #fff;
   color: var(--text);
-  font-size: 0.88rem;
+  font-size: 0.84rem;
   font-weight: 700;
   box-shadow: none;
 }
@@ -749,10 +771,11 @@ form {
   min-height: 220px;
   border: 1px solid var(--line-strong);
   border-radius: 0 0 18px 18px;
-  padding: 22px;
-  background: #fff;
+  padding: 28px;
+  background: linear-gradient(180deg, #fff, #fffdfa);
   color: var(--text);
   line-height: 1.6;
+  font-size: 1.02rem;
 }
 
 .rich-editor-surface:focus {
@@ -763,7 +786,8 @@ form {
 
 .rich-editor-surface p,
 .rich-editor-surface li,
-.rich-editor-surface h2 {
+.rich-editor-surface h2,
+.rich-editor-surface h3 {
   color: var(--text);
 }
 
@@ -781,6 +805,11 @@ form {
 .rich-editor-surface ul,
 .rich-editor-surface ol {
   margin: 0 0 12px;
+}
+
+.rich-editor-surface ul,
+.rich-editor-surface ol {
+  padding-left: 24px;
 }
 
 .rich-editor-surface blockquote {
@@ -844,7 +873,11 @@ form {
   color: #4f4841;
   padding: 8px 12px;
   font-weight: 600;
- }
+}
+
+.form-status-inline {
+  margin: -2px 0 4px;
+}
 
 @media (max-width: 980px) {
   .shell {
