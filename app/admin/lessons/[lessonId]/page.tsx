@@ -10,6 +10,7 @@ import {
   updateLessonAction,
 } from "@/app/admin/actions";
 import { AddContentBlockSection } from "@/components/add-content-block-section";
+import { AddLessonDownloadSection } from "@/components/add-lesson-download-section";
 import { AppShell } from "@/components/app-shell";
 import { BlockEditorForm } from "@/components/block-editor-form";
 import { DownloadEditorForm } from "@/components/download-editor-form";
@@ -128,7 +129,12 @@ export default async function AdminLessonPage({
         </form>
       </section>
 
-      <section className="stack">
+      <section className="stack stack-tight">
+        <div className="section-header">
+          <p className="eyebrow">Lesson content</p>
+          <h2>Content blocks</h2>
+          <p>Edit the pieces of this lesson in the order they should appear to members.</p>
+        </div>
         {lesson.blocks.map((block) => {
           const updateBlock = updateBlockAction.bind(null, lesson.id, block.id);
           const deleteBlock = deleteBlockAction.bind(null, lesson.id, block.id);
@@ -170,9 +176,15 @@ export default async function AdminLessonPage({
       />
 
       <section className="panel lesson-panel">
-        <h2>Lesson downloads</h2>
         <div className="stack">
-          {lesson.downloads.map((download) => {
+          <div className="section-header">
+            <p className="eyebrow">Downloads</p>
+            <h2>Lesson downloads</h2>
+            <p>Manage the files members can open or download from this lesson.</p>
+          </div>
+          {lesson.downloads.length > 0 ? (
+            <div className="stack">
+              {lesson.downloads.map((download) => {
             const updateDownload = updateDownloadAction.bind(null, lesson.id, download.id);
             const deleteDownload = deleteDownloadAction.bind(null, lesson.id, download.id);
 
@@ -193,20 +205,19 @@ export default async function AdminLessonPage({
                 />
               </section>
             );
-          })}
+              })}
+            </div>
+          ) : (
+            <div className="empty-copy">
+              <p>No lesson downloads added yet.</p>
+            </div>
+          )}
+          <AddLessonDownloadSection
+            action={createDownload}
+            initialPosition={lesson.downloads.length}
+            refreshKey={refreshKey}
+          />
         </div>
-      </section>
-
-      <section className="panel lesson-panel">
-        <h2>Add lesson download</h2>
-        <DownloadEditorForm
-          action={createDownload}
-          initialPosition={lesson.downloads.length}
-          key={`create-download-${refreshKey}`}
-          showPosition={false}
-          submitLabel="Add lesson download"
-          titleInputId="new-download-title"
-        />
       </section>
     </AppShell>
   );

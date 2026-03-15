@@ -134,7 +134,7 @@ export function StorageUploadField({
           ) : (
             <div className="image-upload-empty">No thumbnail selected</div>
           )}
-          {showUrlInput || !value ? (
+          {showUrlInput || !allowUpload ? (
             <input
               type={type}
               value={value}
@@ -159,9 +159,9 @@ export function StorageUploadField({
               </span>
             </a>
           ) : (
-            <div className="image-upload-empty">No file selected</div>
+            <div className="file-upload-empty">No file selected yet</div>
           )}
-          {showUrlInput || !value ? (
+          {showUrlInput || !allowUpload ? (
             <input
               type={type}
               value={value}
@@ -192,10 +192,10 @@ export function StorageUploadField({
             type="button"
           >
             {isImageField
-              ? showUrlInput || !value
+              ? showUrlInput
                 ? "Hide image URL"
                 : "Paste image URL"
-              : showUrlInput || !value
+              : showUrlInput
                 ? "Hide file URL"
                 : "Paste file URL"}
           </button>

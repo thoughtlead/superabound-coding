@@ -32,15 +32,25 @@ export function AddContentBlockSection({
   return (
     <section className="panel lesson-panel">
       {!open ? (
-        <div className="panel-actions">
-          <button onClick={() => setOpen(true)} type="button">
-            Add content block
-          </button>
+        <div className="row-spread section-header">
+          <div className="stack stack-tight">
+            <p className="eyebrow">Content builder</p>
+            <h2>Add lesson content</h2>
+            <p>Insert rich text, video, audio, or image blocks in the order members should see them.</p>
+          </div>
+          <div className="panel-actions">
+            <button onClick={() => setOpen(true)} type="button">
+              Add content block
+            </button>
+          </div>
         </div>
       ) : (
         <>
-          <div className="row-spread">
-            <h2>{heading}</h2>
+          <div className="row-spread section-header">
+            <div className="stack stack-tight">
+              <p className="eyebrow">Content builder</p>
+              <h2>{heading}</h2>
+            </div>
             <button
               className="button button-secondary"
               onClick={() => setOpen(false)}

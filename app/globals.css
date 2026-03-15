@@ -349,6 +349,15 @@ form {
   font-size: 0.96rem;
 }
 
+.section-header {
+  display: grid;
+  gap: 8px;
+}
+
+.section-header > p:last-child {
+  max-width: 720px;
+}
+
 .course-grid {
   display: grid;
   gap: 18px;
@@ -748,6 +757,19 @@ form {
   gap: 12px;
 }
 
+.file-upload-empty {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: min(100%, 520px);
+  min-height: 78px;
+  padding: 14px 16px;
+  border: 1px dashed rgba(29, 27, 25, 0.18);
+  border-radius: 18px;
+  color: var(--muted);
+  background: rgba(247, 247, 250, 0.72);
+}
+
 .image-upload-preview {
   overflow: hidden;
   width: min(100%, 340px);
@@ -821,6 +843,10 @@ form {
 .file-upload-copy span {
   color: var(--muted);
   font-size: 0.9rem;
+}
+
+.empty-copy {
+  padding: 16px 0 2px;
 }
 
 @media (max-width: 1080px) {

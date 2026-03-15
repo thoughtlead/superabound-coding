@@ -59,7 +59,7 @@ async function swapModulePosition(
     .from("modules")
     .select("id, position")
     .eq("course_id", moduleItem.course_id)
-    .order("position", { ascending: direction === "up" });
+    .order("position", { ascending: direction === "down" });
   const { data: adjacentModule, error: adjacentError } =
     direction === "up"
       ? await adjacentModuleQuery.lt("position", moduleItem.position).limit(1).maybeSingle()
@@ -104,7 +104,7 @@ async function swapLessonPosition(
     .from("lessons")
     .select("id, position")
     .eq("module_id", lesson.module_id)
-    .order("position", { ascending: direction === "up" });
+    .order("position", { ascending: direction === "down" });
   const { data: adjacentLesson, error: adjacentError } =
     direction === "up"
       ? await adjacentLessonQuery.lt("position", lesson.position).limit(1).maybeSingle()
