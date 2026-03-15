@@ -888,12 +888,143 @@ form {
   font-size: 0.9rem;
 }
 
+.member-search-row {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.member-search-shell {
+  position: relative;
+}
+
+.member-search-results {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 10px);
+  left: 0;
+  width: min(100%, 720px);
+  border: 1px solid rgba(29, 27, 25, 0.08);
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.member-search-result {
+  width: 100%;
+  justify-content: flex-start;
+  min-height: 0;
+  padding: 14px 16px;
+  border: 0;
+  border-bottom: 1px solid rgba(29, 27, 25, 0.08);
+  border-radius: 0;
+  background: #fff;
+  color: var(--text);
+  box-shadow: none;
+}
+
+.member-search-result:last-child {
+  border-bottom: 0;
+}
+
+.member-search-result:hover {
+  background: rgba(247, 247, 250, 0.92);
+  box-shadow: none;
+}
+
+.member-search-result > span {
+  display: grid;
+  gap: 4px;
+  text-align: left;
+}
+
+.member-search-result strong {
+  font-size: 0.96rem;
+}
+
+.member-search-result span span,
+.member-search-empty {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.member-search-empty {
+  padding: 14px 16px;
+}
+
+.member-admin-card {
+  padding: 20px 22px;
+}
+
+.member-admin-head {
+  display: grid;
+  gap: 16px;
+}
+
+.member-admin-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.member-admin-meta h3 {
+  font-size: 1.18rem;
+  line-height: 1.2;
+}
+
+.member-name-form,
+.member-name-field {
+  display: grid;
+  gap: 8px;
+}
+
+.member-name-controls {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 320px) auto;
+  align-items: center;
+}
+
+.member-course-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.member-course-enable {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+}
+
+.pagination-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
 @media (max-width: 1080px) {
   .course-editor-top {
     grid-template-columns: 1fr;
   }
 
   .course-outline-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .member-search-row,
+  .member-name-controls {
+    grid-template-columns: 1fr;
+  }
+
+  .member-admin-meta,
+  .pagination-row {
     align-items: flex-start;
     flex-direction: column;
   }

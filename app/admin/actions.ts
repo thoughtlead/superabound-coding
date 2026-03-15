@@ -48,6 +48,11 @@ function getMultiValues(formData: FormData, key: string) {
     .filter(Boolean);
 }
 
+function getReturnPath(formData: FormData, fallbackPath: string) {
+  const returnTo = getValue(formData, "returnTo");
+  return returnTo.startsWith("/") ? returnTo : fallbackPath;
+}
+
 function getBaseUrl() {
   const headerStore = headers();
   const forwardedProto = headerStore.get("x-forwarded-proto");
@@ -471,9 +476,10 @@ export async function createEnrollmentAction(formData: FormData) {
   const { supabase } = await requireAdmin();
   const courseId = getValue(formData, "courseId");
   const userId = getValue(formData, "userId");
+  const returnPath = getReturnPath(formData, "/admin/enrollments");
 
   if (!courseId || !userId) {
-    redirect(withMessage("/admin/enrollments", "Choose both a user and a course."));
+    redirect(withMessage(returnPath, "Choose both a user and a course."));
   }
 
   const { error } = await supabase.from("course_enrollments").upsert(
@@ -488,12 +494,12 @@ export async function createEnrollmentAction(formData: FormData) {
   );
 
   if (error) {
-    redirect(withMessage("/admin/enrollments", error.message));
+    redirect(withMessage(returnPath, error.message));
   }
 
   revalidatePath("/admin/enrollments");
   revalidatePath("/library");
-  redirect(withMessage("/admin/enrollments", "Enrollment granted."));
+  redirect(withMessage(returnPath, "Enrollment granted."));
 }
 
 export async function inviteMemberAction(formData: FormData) {
@@ -616,22 +622,24 @@ export async function inviteMemberAction(formData: FormData) {
 export async function updateEnrollmentStatusAction(
   enrollmentId: string,
   nextStatus: "active" | "revoked",
+  formData: FormData,
 ) {
   const { supabase } = await requireAdmin();
+  const returnPath = getReturnPath(formData, "/admin/enrollments");
   const { error } = await supabase
     .from("course_enrollments")
     .update({ status: nextStatus })
     .eq("id", enrollmentId);
 
   if (error) {
-    redirect(withMessage("/admin/enrollments", error.message));
+    redirect(withMessage(returnPath, error.message));
   }
 
   revalidatePath("/admin/enrollments");
   revalidatePath("/library");
   redirect(
     withMessage(
-      "/admin/enrollments",
+      returnPath,
       nextStatus === "active" ? "Enrollment restored." : "Enrollment revoked.",
     ),
   );
@@ -640,9 +648,10 @@ export async function updateEnrollmentStatusAction(
 export async function updateUserNameAction(userId: string, formData: FormData) {
   const { supabase } = await requireAdmin();
   const fullName = getValue(formData, "fullName");
+  const returnPath = getReturnPath(formData, "/admin/enrollments");
 
   if (!fullName) {
-    redirect(withMessage("/admin/enrollments", "Name is required."));
+    redirect(withMessage(returnPath, "Name is required."));
   }
 
   const { error } = await supabase
@@ -651,12 +660,12 @@ export async function updateUserNameAction(userId: string, formData: FormData) {
     .eq("id", userId);
 
   if (error) {
-    redirect(withMessage("/admin/enrollments", error.message));
+    redirect(withMessage(returnPath, error.message));
   }
 
   revalidatePath("/admin/enrollments");
   revalidatePath("/account");
-  redirect(withMessage("/admin/enrollments", "Member name updated."));
+  redirect(withMessage(returnPath, "Member name updated."));
 }
 
 export async function updateDownloadAction(

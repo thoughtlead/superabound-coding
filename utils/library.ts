@@ -182,6 +182,13 @@ export type AdminEnrollment = {
   user: AdminEnrollmentUser;
 };
 
+type AdminEnrollmentDashboardOptions = {
+  memberId?: string;
+  page?: number;
+  query?: string;
+  pageSize?: number;
+};
+
 function isSetupError(error: QueryError | null) {
   return error?.code === "42P01" || error?.code === "42703";
 }
@@ -562,40 +569,42 @@ export async function getAdminCourse(courseSlug: string) {
   };
 }
 
-export async function getAdminEnrollmentDashboard() {
+export async function getAdminEnrollmentDashboard({
+  memberId,
+  page = 1,
+  query = "",
+  pageSize = 50,
+}: AdminEnrollmentDashboardOptions = {}) {
   const supabase = createClient();
-  const [coursesResponse, profilesResponse, enrollmentsResponse] = await Promise.all([
+  const safePage = Number.isFinite(page) && page > 0 ? Math.floor(page) : 1;
+  const normalizedQuery = query.trim();
+  const rangeFrom = (safePage - 1) * pageSize;
+  const rangeTo = rangeFrom + pageSize - 1;
+  let profilesQuery = supabase
+    .from("profiles")
+    .select("id, email, full_name, role, created_at", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .range(rangeFrom, rangeTo);
+
+  if (memberId) {
+    profilesQuery = supabase
+      .from("profiles")
+      .select("id, email, full_name, role, created_at", { count: "exact" })
+      .eq("id", memberId)
+      .limit(1);
+  } else if (normalizedQuery) {
+    const escapedQuery = normalizedQuery.replace(/[%_,]/g, "\\$&");
+    profilesQuery = profilesQuery.or(
+      `full_name.ilike.%${escapedQuery}%,email.ilike.%${escapedQuery}%`,
+    );
+  }
+
+  const [coursesResponse, profilesResponse] = await Promise.all([
     supabase
       .from("courses")
       .select("id, slug, title, status")
       .order("title", { ascending: true }),
-    supabase
-      .from("profiles")
-      .select("id, email, full_name, role, created_at")
-      .order("created_at", { ascending: false }),
-    supabase
-      .from("course_enrollments")
-      .select(
-        `
-          id,
-          status,
-          created_at,
-          course:courses!inner(
-            id,
-            slug,
-            title,
-            status
-          ),
-          user:profiles!inner(
-            id,
-            email,
-            full_name,
-            role,
-            created_at
-          )
-        `,
-      )
-      .order("created_at", { ascending: false }),
+    profilesQuery,
   ]);
 
   const courseState = toQueryState(
@@ -617,6 +626,34 @@ export async function getAdminEnrollmentDashboard() {
     }> | null,
     profilesResponse.error,
   );
+  const userIds = (profileState.data ?? []).map((profile) => profile.id);
+  const enrollmentsResponse =
+    userIds.length > 0
+      ? await supabase
+          .from("course_enrollments")
+          .select(
+            `
+              id,
+              status,
+              created_at,
+              course:courses!inner(
+                id,
+                slug,
+                title,
+                status
+              ),
+              user:profiles!inner(
+                id,
+                email,
+                full_name,
+                role,
+                created_at
+              )
+            `,
+          )
+          .in("user_id", userIds)
+          .order("created_at", { ascending: false })
+      : { data: [], error: null };
   const enrollmentState = toQueryState(
     enrollmentsResponse.data as Array<{
       id: string;
@@ -638,16 +675,22 @@ export async function getAdminEnrollmentDashboard() {
     }> | null,
     enrollmentsResponse.error,
   );
+  const totalUsers = profilesResponse.count ?? 0;
 
   return {
     setupRequired:
       courseState.setupRequired || profileState.setupRequired || enrollmentState.setupRequired,
+    currentPage: safePage,
     courses: (courseState.data ?? []).map((course) => ({
       id: course.id,
       slug: course.slug,
       title: course.title,
       status: course.status,
     })),
+    pageSize,
+    query: normalizedQuery,
+    totalPages: memberId ? 1 : Math.max(1, Math.ceil(totalUsers / pageSize)),
+    totalUsers,
     users: (profileState.data ?? []).map((profile) => ({
       id: profile.id,
       email: profile.email,
