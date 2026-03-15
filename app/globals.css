@@ -495,8 +495,37 @@ form {
 
 .lesson-layout {
   display: grid;
-  gap: 20px;
-  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 24px;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  align-items: start;
+}
+
+.lesson-layout > .stack {
+  gap: 16px;
+}
+
+.lesson-thumbnail-panel,
+.lesson-hero-media {
+  overflow: hidden;
+  border: 1px solid rgba(29, 27, 25, 0.08);
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: var(--shadow);
+  aspect-ratio: 16 / 6.1;
+}
+
+.lesson-thumbnail-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.media-frame-hero {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+  border-radius: 0;
 }
 
 .sidebar-lesson-list {

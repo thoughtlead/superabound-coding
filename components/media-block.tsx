@@ -2,6 +2,7 @@ import { LessonBlock } from "@/utils/library";
 
 type MediaBlockProps = {
   block: LessonBlock;
+  variant?: "default" | "hero";
 };
 
 function getVimeoEmbed(url: string) {
@@ -34,7 +35,7 @@ function getEmbedUrl(block: LessonBlock) {
   return block.mediaUrl;
 }
 
-export function MediaBlock({ block }: MediaBlockProps) {
+export function MediaBlock({ block, variant = "default" }: MediaBlockProps) {
   if (block.type === "rich_text" && block.body) {
     return (
       <section className="panel lesson-panel">
@@ -49,12 +50,13 @@ export function MediaBlock({ block }: MediaBlockProps) {
 
   if (block.type === "video") {
     const embedUrl = getEmbedUrl(block);
+    const isHero = variant === "hero";
 
     return (
-      <section className="panel lesson-panel">
-        {block.title ? <h2>{block.title}</h2> : null}
+      <section className={isHero ? "lesson-hero-media" : "panel lesson-panel"}>
+        {!isHero && block.title ? <h2>{block.title}</h2> : null}
         {embedUrl ? (
-          <div className="media-frame">
+          <div className={isHero ? "media-frame media-frame-hero" : "media-frame"}>
             <iframe
               allow="autoplay; fullscreen; picture-in-picture"
               allowFullScreen

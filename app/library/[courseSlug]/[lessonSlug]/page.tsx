@@ -1,3 +1,5 @@
+/* eslint-disable @next/next/no-img-element */
+
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
@@ -75,6 +77,11 @@ export default async function LessonPage({ params }: LessonPageProps) {
     notFound();
   }
 
+  const primaryVideoBlock = lesson.blocks.find((block) => block.type === "video") ?? null;
+  const remainingBlocks = primaryVideoBlock
+    ? lesson.blocks.filter((block) => block.id !== primaryVideoBlock.id)
+    : lesson.blocks;
+
   return (
     <AppShell
       title={
@@ -91,7 +98,17 @@ export default async function LessonPage({ params }: LessonPageProps) {
     >
       <section className="lesson-layout">
         <div className="stack">
-          {lesson.blocks.map((block) => (
+          {primaryVideoBlock ? <MediaBlock block={primaryVideoBlock} variant="hero" /> : null}
+          {!primaryVideoBlock && lesson.thumbnailUrl ? (
+            <section className="lesson-thumbnail-panel">
+              <img
+                alt={lesson.title}
+                className="lesson-thumbnail-image"
+                src={lesson.thumbnailUrl}
+              />
+            </section>
+          ) : null}
+          {remainingBlocks.map((block) => (
             <MediaBlock key={block.id} block={block} />
           ))}
           {lesson.downloads.length > 0 ? (

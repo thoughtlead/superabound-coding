@@ -65,7 +65,7 @@ export default async function AdminEnrollmentsPage({
 
       {!setupRequired ? (
         <section className="panel lesson-panel">
-          <h2>Grant course access</h2>
+          <h2>Enable course access</h2>
           <form action={createEnrollmentAction} className="editor-form stack">
             <div className="field-grid">
               <div>
@@ -96,11 +96,11 @@ export default async function AdminEnrollmentsPage({
               </div>
             </div>
             <p className="form-note">
-              This grants immediate library access. Re-running it for the same user and course
-              restores a revoked enrollment.
+              This enables immediate library access. Re-running it for the same user and course
+              re-enables a removed enrollment.
             </p>
             <div className="panel-actions">
-              <button type="submit">Grant access</button>
+              <button type="submit">Enable course</button>
             </div>
           </form>
         </section>
@@ -171,7 +171,7 @@ export default async function AdminEnrollmentsPage({
                           <span className="pill">{enrollment.status}</span>
                           <form action={toggleEnrollment}>
                             <button className="button button-secondary" type="submit">
-                              {enrollment.status === "active" ? "Revoke" : "Restore"}
+                              {enrollment.status === "active" ? "Remove access" : "Enable course"}
                             </button>
                           </form>
                         </div>
