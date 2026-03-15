@@ -39,7 +39,7 @@ export function BlockEditorForm({
   const submitButtonRef = useRef<HTMLButtonElement>(null);
   const [autoSaving, setAutoSaving] = useState(false);
 
-  const handleVideoUploaded = () => {
+  const handleMediaUploaded = () => {
     setAutoSaving(true);
     formRef.current?.requestSubmit(submitButtonRef.current ?? undefined);
   };
@@ -55,7 +55,7 @@ export function BlockEditorForm({
         initialTitle={initialTitle}
         initialType={initialType}
         onTypeChange={onTypeChange}
-        onVideoUploaded={handleVideoUploaded}
+        onMediaUploaded={handleMediaUploaded}
         prefix={prefix}
       />
       {statusMessage ? <p className="form-status form-status-inline">{statusMessage}</p> : null}

@@ -14,7 +14,7 @@ type BlockEditorFieldsProps = {
   initialTitle?: string | null;
   initialType?: "video" | "audio" | "rich_text" | "download" | "image";
   onTypeChange?: (value: "video" | "audio" | "rich_text" | "download" | "image") => void;
-  onVideoUploaded?: () => void;
+  onMediaUploaded?: () => void;
   prefix: string;
 };
 
@@ -27,14 +27,14 @@ export function BlockEditorFields({
   initialTitle,
   initialType = "rich_text",
   onTypeChange,
-  onVideoUploaded,
+  onMediaUploaded,
   prefix,
 }: BlockEditorFieldsProps) {
   const [blockType, setBlockType] = useState(initialType);
   const [mediaProvider, setMediaProvider] = useState(initialMediaProvider ?? "");
   const [mediaUrl, setMediaUrl] = useState(initialMediaUrl ?? "");
   const [embedUrl, setEmbedUrl] = useState(initialEmbedUrl ?? "");
-  const [pendingVideoSave, setPendingVideoSave] = useState(false);
+  const [pendingMediaSave, setPendingMediaSave] = useState(false);
 
   useEffect(() => {
     setBlockType(initialType);
@@ -54,7 +54,7 @@ export function BlockEditorFields({
   }, [blockType, initialMediaProvider, mediaProvider]);
 
   useEffect(() => {
-    if (!pendingVideoSave) {
+    if (!pendingMediaSave) {
       return;
     }
 
@@ -66,9 +66,9 @@ export function BlockEditorFields({
       return;
     }
 
-    onVideoUploaded?.();
-    setPendingVideoSave(false);
-  }, [embedUrl, mediaProvider, mediaUrl, onVideoUploaded, pendingVideoSave]);
+    onMediaUploaded?.();
+    setPendingMediaSave(false);
+  }, [embedUrl, mediaProvider, mediaUrl, onMediaUploaded, pendingMediaSave]);
 
   const mediaFolder = useMemo(() => {
     if (blockType === "audio") {
@@ -160,6 +160,11 @@ export function BlockEditorFields({
             label="Audio file or URL"
             name="mediaUrl"
             onChange={setMediaUrl}
+            onUploadComplete={({ publicUrl }) => {
+              setMediaProvider("supabase-storage");
+              setMediaUrl(publicUrl);
+              setPendingMediaSave(true);
+            }}
             value={mediaUrl}
           />
           <input name="embedUrl" readOnly type="hidden" value="" />
@@ -176,6 +181,10 @@ export function BlockEditorFields({
             label="Image"
             name="mediaUrl"
             onChange={setMediaUrl}
+            onUploadComplete={({ publicUrl }) => {
+              setMediaUrl(publicUrl);
+              setPendingMediaSave(true);
+            }}
             value={mediaUrl}
           />
           <input name="mediaProvider" readOnly type="hidden" value="supabase-storage" />
@@ -211,7 +220,7 @@ export function BlockEditorFields({
               setEmbedUrl(nextEmbedUrl);
               setMediaProvider(nextProvider);
               setMediaUrl(nextMediaUrl);
-              setPendingVideoSave(true);
+              setPendingMediaSave(true);
             }}
           />
           {isCloudflareProvider ? (
