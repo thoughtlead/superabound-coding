@@ -85,7 +85,13 @@ export default async function AdminCoursesPage({
                 <h2>{course.title}</h2>
                 {course.subtitle ? <p>{course.subtitle}</p> : null}
               </div>
-              <span className="pill">{course.status}</span>
+              <span
+                className={`pill status-pill ${
+                  course.status === "published" ? "status-pill-published" : "status-pill-draft"
+                }`}
+              >
+                {course.status}
+              </span>
             </Link>
           ))}
         </section>

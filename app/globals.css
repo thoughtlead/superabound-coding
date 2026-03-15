@@ -527,6 +527,16 @@ form {
   color: #5d554d;
 }
 
+.status-pill-published {
+  background: #e5f6e8;
+  color: #2f6a3d;
+}
+
+.status-pill-draft {
+  background: var(--accent-soft);
+  color: #5d554d;
+}
+
 .stat-chip {
   border: 1px solid var(--line-strong);
   color: var(--muted);
