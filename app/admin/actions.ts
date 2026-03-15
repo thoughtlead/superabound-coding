@@ -174,6 +174,45 @@ async function swapLessonPosition(
   redirect(withMessage(`/admin/courses/${courseSlug}`, "Lesson order updated."));
 }
 
+async function rebalanceLessonBlockPositions(
+  supabase: Awaited<ReturnType<typeof requireAdmin>>["supabase"],
+  lessonId: string,
+  movingBlockId: string,
+  requestedPosition: number,
+) {
+  const { data: blocks, error: blocksError } = await supabase
+    .from("lesson_blocks")
+    .select("id, position")
+    .eq("lesson_id", lessonId)
+    .order("position", { ascending: true })
+    .order("id", { ascending: true });
+
+  if (blocksError || !blocks) {
+    return blocksError?.message ?? "Could not load lesson blocks.";
+  }
+
+  const orderedIds = blocks.map((block) => block.id);
+  const currentIndex = orderedIds.indexOf(movingBlockId);
+
+  if (currentIndex === -1) {
+    return "Content block not found in lesson.";
+  }
+
+  orderedIds.splice(currentIndex, 1);
+  const nextIndex = Math.max(0, Math.min(requestedPosition, orderedIds.length));
+  orderedIds.splice(nextIndex, 0, movingBlockId);
+
+  for (const [index, id] of orderedIds.entries()) {
+    const { error } = await supabase.from("lesson_blocks").update({ position: index }).eq("id", id);
+
+    if (error) {
+      return error.message;
+    }
+  }
+
+  return null;
+}
+
 export async function createCourseAction(formData: FormData) {
   const { supabase, user } = await requireAdmin();
   const title = getValue(formData, "title");
@@ -479,20 +518,36 @@ export async function updateLessonAction(
 export async function createBlockAction(lessonId: string, formData: FormData) {
   const { supabase } = await requireAdmin();
   const blockType = getValue(formData, "blockType");
+  const requestedPosition = getOneBasedPosition(formData, "position");
 
-  const { error } = await supabase.from("lesson_blocks").insert({
-    lesson_id: lessonId,
-    block_type: blockType,
-    title: getValue(formData, "title") || null,
-    body: getValue(formData, "body") || null,
-    media_provider: getValue(formData, "mediaProvider") || null,
-    media_url: getValue(formData, "mediaUrl") || null,
-    embed_url: getValue(formData, "embedUrl") || null,
-    position: getOneBasedPosition(formData, "position"),
-  });
+  const { data, error } = await supabase
+    .from("lesson_blocks")
+    .insert({
+      lesson_id: lessonId,
+      block_type: blockType,
+      title: getValue(formData, "title") || null,
+      body: getValue(formData, "body") || null,
+      media_provider: getValue(formData, "mediaProvider") || null,
+      media_url: getValue(formData, "mediaUrl") || null,
+      embed_url: getValue(formData, "embedUrl") || null,
+      position: requestedPosition,
+    })
+    .select("id")
+    .single();
 
-  if (error) {
+  if (error || !data) {
     redirect(withMessage(`/admin/lessons/${lessonId}`, error.message));
+  }
+
+  const rebalanceError = await rebalanceLessonBlockPositions(
+    supabase,
+    lessonId,
+    data.id,
+    requestedPosition,
+  );
+
+  if (rebalanceError) {
+    redirect(withMessage(`/admin/lessons/${lessonId}`, rebalanceError));
   }
 
   revalidatePath(`/admin/lessons/${lessonId}`);
@@ -505,6 +560,7 @@ export async function updateBlockAction(
   formData: FormData,
 ) {
   const { supabase } = await requireAdmin();
+  const requestedPosition = getOneBasedPosition(formData, "position");
   const { error } = await supabase
     .from("lesson_blocks")
     .update({
@@ -514,12 +570,23 @@ export async function updateBlockAction(
       media_provider: getValue(formData, "mediaProvider") || null,
       media_url: getValue(formData, "mediaUrl") || null,
       embed_url: getValue(formData, "embedUrl") || null,
-      position: getOneBasedPosition(formData, "position"),
+      position: requestedPosition,
     })
     .eq("id", blockId);
 
   if (error) {
     redirect(withMessage(`/admin/lessons/${lessonId}`, error.message));
+  }
+
+  const rebalanceError = await rebalanceLessonBlockPositions(
+    supabase,
+    lessonId,
+    blockId,
+    requestedPosition,
+  );
+
+  if (rebalanceError) {
+    redirect(withMessage(`/admin/lessons/${lessonId}`, rebalanceError));
   }
 
   revalidatePath(`/admin/lessons/${lessonId}`);
