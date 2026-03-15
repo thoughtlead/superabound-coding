@@ -328,6 +328,18 @@ form {
   gap: 16px;
 }
 
+.course-add-module-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.course-add-module-header p:last-child {
+  max-width: 460px;
+}
+
 .course-add-module-panel {
   padding: 24px;
   border-style: dashed;
@@ -341,12 +353,16 @@ form {
   align-items: flex-end;
   justify-content: space-between;
   gap: 20px;
-  padding: 0 2px 4px;
+  padding: 0 2px 2px;
 }
 
 .course-outline-header p:last-child {
   max-width: 520px;
   font-size: 0.96rem;
+}
+
+.course-outline-section {
+  gap: 16px;
 }
 
 .section-header {

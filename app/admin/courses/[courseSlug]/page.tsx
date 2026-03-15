@@ -128,10 +128,11 @@ export default async function AdminCoursePage({
           </section>
 
           <section className="panel lesson-panel course-add-module-panel">
-            <div className="row-spread">
+            <div className="course-add-module-header">
               <div>
                 <p className="eyebrow">Course outline</p>
                 <h2>Add module</h2>
+                <p>Add the next module here, then manage lesson order in the outline below.</p>
               </div>
               {showModuleAddedTag ? <span className="stat-chip">Module added</span> : null}
             </div>
@@ -161,7 +162,7 @@ export default async function AdminCoursePage({
           </section>
         </section>
 
-        <section className="stack stack-tight">
+        <section className="stack course-outline-section">
           <div className="course-outline-header">
             <div>
               <p className="eyebrow">Course outline</p>
@@ -171,147 +172,144 @@ export default async function AdminCoursePage({
               Keep modules together here, then add and reorder lessons inside each module.
             </p>
           </div>
-        </section>
+          {course.modules.map((moduleItem) => {
+            const updateModule = updateModuleAction.bind(null, course.slug, moduleItem.id);
+            const moveModuleUp = moveModuleUpAction.bind(null, course.slug, moduleItem.id);
+            const moveModuleDown = moveModuleDownAction.bind(null, course.slug, moduleItem.id);
+            const createLesson = createLessonAction.bind(null, course.slug, moduleItem.id);
 
-        <section className="stack">
-        {course.modules.map((moduleItem) => {
-          const updateModule = updateModuleAction.bind(null, course.slug, moduleItem.id);
-          const moveModuleUp = moveModuleUpAction.bind(null, course.slug, moduleItem.id);
-          const moveModuleDown = moveModuleDownAction.bind(null, course.slug, moduleItem.id);
-          const createLesson = createLessonAction.bind(null, course.slug, moduleItem.id);
-
-          return (
-            <article id={`module-${moduleItem.id}`} key={moduleItem.id} className="panel module-card">
-              <div className="row-spread">
-                <div>
-                  <p className="eyebrow">Module {moduleItem.position + 1}</p>
-                  <h2>{moduleItem.title}</h2>
-                </div>
-                <div className="inline-actions">
-                  <form action={moveModuleUp}>
-                    <button className="button button-secondary" type="submit">
-                      Move up
-                    </button>
-                  </form>
-                  <form action={moveModuleDown}>
-                    <button className="button button-secondary" type="submit">
-                      Move down
-                    </button>
-                  </form>
-                </div>
-              </div>
-
-              <form action={updateModule} className="editor-form stack">
-                <div className="field-grid">
+            return (
+              <article id={`module-${moduleItem.id}`} key={moduleItem.id} className="panel module-card">
+                <div className="row-spread">
                   <div>
-                    <label htmlFor={`module-title-${moduleItem.id}`}>Title</label>
-                    <input
-                      defaultValue={moduleItem.title}
-                      id={`module-title-${moduleItem.id}`}
-                      name="title"
-                      required
-                      type="text"
+                    <p className="eyebrow">Module {moduleItem.position + 1}</p>
+                    <h2>{moduleItem.title}</h2>
+                  </div>
+                  <div className="inline-actions">
+                    <form action={moveModuleUp}>
+                      <button className="button button-secondary" type="submit">
+                        Move up
+                      </button>
+                    </form>
+                    <form action={moveModuleDown}>
+                      <button className="button button-secondary" type="submit">
+                        Move down
+                      </button>
+                    </form>
+                  </div>
+                </div>
+
+                <form action={updateModule} className="editor-form stack">
+                  <div className="field-grid">
+                    <div>
+                      <label htmlFor={`module-title-${moduleItem.id}`}>Title</label>
+                      <input
+                        defaultValue={moduleItem.title}
+                        id={`module-title-${moduleItem.id}`}
+                        name="title"
+                        required
+                        type="text"
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor={`module-status-${moduleItem.id}`}>Status</label>
+                      <select
+                        defaultValue={moduleItem.status}
+                        id={`module-status-${moduleItem.id}`}
+                        name="status"
+                      >
+                        <option value="draft">Draft</option>
+                        <option value="published">Published</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label htmlFor={`module-description-${moduleItem.id}`}>Description</label>
+                    <textarea
+                      defaultValue={moduleItem.description ?? ""}
+                      id={`module-description-${moduleItem.id}`}
+                      name="description"
+                      rows={3}
                     />
                   </div>
-                  <div>
-                    <label htmlFor={`module-status-${moduleItem.id}`}>Status</label>
-                    <select
-                      defaultValue={moduleItem.status}
-                      id={`module-status-${moduleItem.id}`}
-                      name="status"
-                    >
-                      <option value="draft">Draft</option>
-                      <option value="published">Published</option>
-                    </select>
+                  <div className="panel-actions">
+                    <button type="submit">Save module</button>
                   </div>
-                </div>
-                <div>
-                  <label htmlFor={`module-description-${moduleItem.id}`}>Description</label>
-                  <textarea
-                    defaultValue={moduleItem.description ?? ""}
-                    id={`module-description-${moduleItem.id}`}
-                    name="description"
-                    rows={3}
-                  />
-                </div>
-                <div className="panel-actions">
-                  <button type="submit">Save module</button>
-                </div>
-              </form>
+                </form>
 
-              <div className="lesson-list">
-                {moduleItem.lessons.map((lesson, index) => {
-                  const moveLessonUp = moveLessonUpAction.bind(null, course.slug, lesson.id);
-                  const moveLessonDown = moveLessonDownAction.bind(null, course.slug, lesson.id);
+                <div className="lesson-list">
+                  {moduleItem.lessons.map((lesson, index) => {
+                    const moveLessonUp = moveLessonUpAction.bind(null, course.slug, lesson.id);
+                    const moveLessonDown = moveLessonDownAction.bind(null, course.slug, lesson.id);
 
-                  return (
-                    <div key={lesson.id} className="lesson-row lesson-row-admin">
-                      <div>
-                        <span className="lesson-index">{index + 1}</span>
+                    return (
+                      <div key={lesson.id} className="lesson-row lesson-row-admin">
                         <div>
-                          <h3>{lesson.title}</h3>
-                          {lesson.summary ? <p>{lesson.summary}</p> : null}
+                          <span className="lesson-index">{index + 1}</span>
+                          <div>
+                            <h3>{lesson.title}</h3>
+                            {lesson.summary ? <p>{lesson.summary}</p> : null}
+                          </div>
+                        </div>
+                        <div className="inline-actions">
+                          <form action={moveLessonUp}>
+                            <button className="button button-secondary" type="submit">
+                              Up
+                            </button>
+                          </form>
+                          <form action={moveLessonDown}>
+                            <button className="button button-secondary" type="submit">
+                              Down
+                            </button>
+                          </form>
+                          <Link className="button button-secondary" href={`/admin/lessons/${lesson.id}`}>
+                            Edit lesson
+                          </Link>
                         </div>
                       </div>
-                      <div className="inline-actions">
-                        <form action={moveLessonUp}>
-                          <button className="button button-secondary" type="submit">
-                            Up
-                          </button>
-                        </form>
-                        <form action={moveLessonDown}>
-                          <button className="button button-secondary" type="submit">
-                            Down
-                          </button>
-                        </form>
-                        <Link className="button button-secondary" href={`/admin/lessons/${lesson.id}`}>
-                          Edit lesson
-                        </Link>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
 
-              <form action={createLesson} className="editor-form stack editor-subsection">
-                <input name="position" type="hidden" value={moduleItem.lessons.length} />
-                <div className="field-grid">
-                  <div>
-                    <label htmlFor={`lesson-title-${moduleItem.id}`}>New lesson title</label>
-                    <input id={`lesson-title-${moduleItem.id}`} name="title" required type="text" />
+                <form action={createLesson} className="editor-form stack editor-subsection">
+                  <input name="position" type="hidden" value={moduleItem.lessons.length} />
+                  <div className="field-grid">
+                    <div>
+                      <label htmlFor={`lesson-title-${moduleItem.id}`}>New lesson title</label>
+                      <input id={`lesson-title-${moduleItem.id}`} name="title" required type="text" />
+                    </div>
+                    <div>
+                      <label htmlFor={`lesson-slug-${moduleItem.id}`}>Slug</label>
+                      <input id={`lesson-slug-${moduleItem.id}`} name="slug" type="text" />
+                    </div>
                   </div>
-                  <div>
-                    <label htmlFor={`lesson-slug-${moduleItem.id}`}>Slug</label>
-                    <input id={`lesson-slug-${moduleItem.id}`} name="slug" type="text" />
+                  <div className="field-grid">
+                    <div>
+                      <label htmlFor={`lesson-status-${moduleItem.id}`}>Status</label>
+                      <select defaultValue="draft" id={`lesson-status-${moduleItem.id}`} name="status">
+                        <option value="draft">Draft</option>
+                        <option value="published">Published</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label htmlFor={`lesson-summary-${moduleItem.id}`}>Summary</label>
+                      <input id={`lesson-summary-${moduleItem.id}`} name="summary" type="text" />
+                    </div>
                   </div>
-                </div>
-                <div className="field-grid">
-                  <div>
-                    <label htmlFor={`lesson-status-${moduleItem.id}`}>Status</label>
-                    <select defaultValue="draft" id={`lesson-status-${moduleItem.id}`} name="status">
-                      <option value="draft">Draft</option>
-                      <option value="published">Published</option>
-                    </select>
+                  <StorageUploadField
+                    accept="image/*"
+                    folder="lesson-thumbnails"
+                    helpText="Optional lesson thumbnail."
+                    label="Lesson thumbnail"
+                    name="thumbnailUrl"
+                  />
+                  <div className="panel-actions">
+                    <button type="submit">Add lesson</button>
                   </div>
-                  <div>
-                    <label htmlFor={`lesson-summary-${moduleItem.id}`}>Summary</label>
-                    <input id={`lesson-summary-${moduleItem.id}`} name="summary" type="text" />
-                  </div>
-                </div>
-                <StorageUploadField
-                  accept="image/*"
-                  folder="lesson-thumbnails"
-                  helpText="Optional lesson thumbnail."
-                  label="Lesson thumbnail"
-                  name="thumbnailUrl"
-                />
-                <div className="panel-actions">
-                  <button type="submit">Add lesson</button>
-                </div>
-              </form>
-            </article>
-          );
-        })}
+                </form>
+              </article>
+            );
+          })}
         </section>
       </div>
     </AppShell>
