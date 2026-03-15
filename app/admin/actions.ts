@@ -558,7 +558,7 @@ export async function inviteMemberAction(formData: FormData) {
   }
 
   const nextPath = encodeURIComponent(
-    "/account/password?message=Create+your+password+to+finish+setting+up+your+account.",
+    "/create-account?message=Create+your+password+to+finish+setting+up+your+account.",
   );
   const redirectTo = `${getBaseUrl()}/auth/callback?next=${nextPath}`;
 
@@ -609,14 +609,14 @@ export async function inviteMemberAction(formData: FormData) {
     redirect(withMessage("/admin/enrollments", enrollmentError.message));
   }
 
-  revalidatePath("/admin/enrollments");
-  revalidatePath("/library");
-  redirect(
-    withMessage(
-      "/admin/enrollments",
-      "Invite sent. The member will receive an email and selected courses are ready.",
-    ),
-  );
+    revalidatePath("/admin/enrollments");
+    revalidatePath("/library");
+    redirect(
+      withMessage(
+        "/admin/enrollments",
+        "Invite sent. The member will receive an email to set up their account, and their course access is already enabled.",
+      ),
+    );
 }
 
 export async function updateEnrollmentStatusAction(

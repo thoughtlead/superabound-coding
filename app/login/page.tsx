@@ -23,11 +23,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     <div className="login-wrap">
       <main className="panel login-card">
         <p className="eyebrow">Superabound</p>
-        <h1>Enter the library</h1>
-        <p>Sign in with the email and password already associated with your membership.</p>
+        <h1>Welcome to the Superabound Library</h1>
+        <p>Sign in with the email and password associated with your invited account.</p>
         <LoginForm message={searchParams?.message} />
         <p className="form-note">
-          New here? <Link href="/signup">Create an account</Link>.
+          New invited member? Use the link in your invite email to create your password.
         </p>
       </main>
     </div>
