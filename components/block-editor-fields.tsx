@@ -54,6 +54,14 @@ export function BlockEditorFields({
     return "lesson-media";
   }, [blockType]);
   const isCloudflareProvider = mediaProvider === "cloudflare-stream";
+  const availableBlockTypes = [
+    { label: "Video", value: "video" },
+    { label: "Audio", value: "audio" },
+    { label: "Rich text", value: "rich_text" },
+    ...(initialType === "download" || blockType === "download"
+      ? [{ label: "Download button", value: "download" as const }]
+      : []),
+  ];
 
   return (
     <>
@@ -66,10 +74,11 @@ export function BlockEditorFields({
             onChange={(event) => setBlockType(event.target.value as typeof initialType)}
             value={blockType}
           >
-            <option value="video">Video</option>
-            <option value="audio">Audio</option>
-            <option value="rich_text">Rich text</option>
-            <option value="download">Download button</option>
+            {availableBlockTypes.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </select>
         </div>
         <div>

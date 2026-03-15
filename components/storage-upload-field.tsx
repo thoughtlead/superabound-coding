@@ -1,3 +1,5 @@
+/* eslint-disable @next/next/no-img-element */
+
 "use client";
 
 import { ChangeEvent, useEffect, useId, useState } from "react";
@@ -41,13 +43,21 @@ export function StorageUploadField({
   const [message, setMessage] = useState<string | null>(null);
   const [selectedFileName, setSelectedFileName] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [showUrlInput, setShowUrlInput] = useState(false);
   const value = controlledValue ?? internalValue;
+  const isImageField = accept?.includes("image/") ?? false;
 
   useEffect(() => {
     if (controlledValue === undefined) {
       setInternalValue(initialValue ?? "");
     }
   }, [controlledValue, initialValue]);
+
+  useEffect(() => {
+    if (!value) {
+      setShowUrlInput(false);
+    }
+  }, [value]);
 
   const updateValue = (nextValue: string) => {
     if (controlledValue === undefined) {
@@ -92,12 +102,32 @@ export function StorageUploadField({
     <div className="upload-field">
       <label>{label}</label>
       <input name={name} type="hidden" value={value} readOnly />
-      <input
-        type={type}
-        value={value}
-        onChange={(event) => updateValue(event.target.value)}
-        placeholder={placeholder}
-      />
+      {isImageField ? (
+        <div className="image-upload-field">
+          {value ? (
+            <div className="image-upload-preview">
+              <img alt={label} className="image-upload-preview-image" src={value} />
+            </div>
+          ) : (
+            <div className="image-upload-empty">No thumbnail selected</div>
+          )}
+          {showUrlInput || !value ? (
+            <input
+              type={type}
+              value={value}
+              onChange={(event) => updateValue(event.target.value)}
+              placeholder={placeholder}
+            />
+          ) : null}
+        </div>
+      ) : (
+        <input
+          type={type}
+          value={value}
+          onChange={(event) => updateValue(event.target.value)}
+          placeholder={placeholder}
+        />
+      )}
       {allowUpload ? (
         <div className="upload-actions">
           <input
@@ -113,6 +143,15 @@ export function StorageUploadField({
           <span className="file-picker-name">
             {selectedFileName || "No file selected"}
           </span>
+          {isImageField ? (
+            <button
+              className="button button-secondary"
+              onClick={() => setShowUrlInput((current) => !current)}
+              type="button"
+            >
+              {showUrlInput || !value ? "Hide image URL" : "Paste image URL"}
+            </button>
+          ) : null}
           {uploading ? <span className="form-note">Uploading...</span> : null}
         </div>
       ) : null}

@@ -158,7 +158,7 @@ export default async function AdminLessonPage({
       </section>
 
       <section className="panel lesson-panel">
-        <h2>Downloads</h2>
+        <h2>Lesson downloads</h2>
         <div className="stack">
           {lesson.downloads.map((download) => {
             const updateDownload = updateDownloadAction.bind(null, lesson.id, download.id);
@@ -211,7 +211,7 @@ export default async function AdminLessonPage({
       </section>
 
       <section className="panel lesson-panel">
-        <h2>Add download</h2>
+        <h2>Add lesson download</h2>
         <form action={createDownload} className="editor-form stack" key={`create-download-${refreshKey}`}>
           <input name="position" type="hidden" value={lesson.downloads.length} />
           <div>
