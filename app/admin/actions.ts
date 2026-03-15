@@ -177,7 +177,6 @@ async function swapLessonPosition(
 export async function createCourseAction(formData: FormData) {
   const { supabase, user } = await requireAdmin();
   const title = getValue(formData, "title");
-  const slugSource = getValue(formData, "slug") || title;
 
   if (!title) {
     redirect(withMessage("/admin/courses", "Course title is required."));
@@ -187,7 +186,7 @@ export async function createCourseAction(formData: FormData) {
     .from("courses")
     .insert({
       title,
-      slug: slugify(slugSource),
+      slug: slugify(title),
       subtitle: getValue(formData, "subtitle") || null,
       description: getValue(formData, "description") || null,
       thumbnail_url: getValue(formData, "thumbnailUrl") || null,
@@ -212,13 +211,12 @@ export async function updateCourseAction(
 ) {
   const { supabase } = await requireAdmin();
   const title = getValue(formData, "title");
-  const slugSource = getValue(formData, "slug") || title;
 
   if (!title) {
     redirect(withMessage(`/admin/courses/${currentSlug}`, "Course title is required."));
   }
 
-  const nextSlug = slugify(slugSource);
+  const nextSlug = slugify(title);
   const { error } = await supabase
     .from("courses")
     .update({
@@ -318,6 +316,59 @@ export async function moveModuleDownAction(courseSlug: string, moduleId: string)
   await swapModulePosition(courseSlug, moduleId, "down");
 }
 
+export async function deleteModuleAction(courseSlug: string, moduleId: string) {
+  const { supabase } = await requireAdmin();
+  const { data: lessons, error: lessonsError } = await supabase
+    .from("lessons")
+    .select("id")
+    .eq("module_id", moduleId);
+
+  if (lessonsError) {
+    redirect(withMessage(`/admin/courses/${courseSlug}`, lessonsError.message));
+  }
+
+  const lessonIds = (lessons ?? []).map((lesson) => lesson.id);
+
+  if (lessonIds.length > 0) {
+    const { error: blocksError } = await supabase
+      .from("lesson_blocks")
+      .delete()
+      .in("lesson_id", lessonIds);
+
+    if (blocksError) {
+      redirect(withMessage(`/admin/courses/${courseSlug}`, blocksError.message));
+    }
+
+    const { error: downloadsError } = await supabase
+      .from("lesson_downloads")
+      .delete()
+      .in("lesson_id", lessonIds);
+
+    if (downloadsError) {
+      redirect(withMessage(`/admin/courses/${courseSlug}`, downloadsError.message));
+    }
+
+    const { error: deleteLessonsError } = await supabase
+      .from("lessons")
+      .delete()
+      .eq("module_id", moduleId);
+
+    if (deleteLessonsError) {
+      redirect(withMessage(`/admin/courses/${courseSlug}`, deleteLessonsError.message));
+    }
+  }
+
+  const { error: moduleError } = await supabase.from("modules").delete().eq("id", moduleId);
+
+  if (moduleError) {
+    redirect(withMessage(`/admin/courses/${courseSlug}`, moduleError.message));
+  }
+
+  revalidatePath(`/admin/courses/${courseSlug}`);
+  revalidatePath("/library");
+  redirect(withMessage(`/admin/courses/${courseSlug}`, "Module deleted."));
+}
+
 export async function createLessonAction(
   courseSlug: string,
   moduleId: string,
@@ -335,7 +386,7 @@ export async function createLessonAction(
     .insert({
       module_id: moduleId,
       title,
-      slug: slugify(getValue(formData, "slug") || title),
+      slug: slugify(title),
       summary: getValue(formData, "summary") || null,
       thumbnail_url: getValue(formData, "thumbnailUrl") || null,
       position: getPosition(formData, "position"),
@@ -409,7 +460,7 @@ export async function updateLessonAction(
     .from("lessons")
     .update({
       title,
-      slug: slugify(getValue(formData, "slug") || title),
+      slug: slugify(title),
       summary: getValue(formData, "summary") || null,
       thumbnail_url: getValue(formData, "thumbnailUrl") || null,
       status: getStatus(formData),

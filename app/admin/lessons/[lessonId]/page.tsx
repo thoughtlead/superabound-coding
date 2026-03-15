@@ -96,15 +96,9 @@ export default async function AdminLessonPage({
           </Link>
         </div>
         <form action={updateLesson} className="editor-form stack">
-          <div className="field-grid">
-            <div>
-              <label htmlFor="lesson-title">Title</label>
-              <input defaultValue={lesson.title} id="lesson-title" name="title" required type="text" />
-            </div>
-            <div>
-              <label htmlFor="lesson-slug">Slug</label>
-              <input defaultValue={lesson.slug} id="lesson-slug" name="slug" required type="text" />
-            </div>
+          <div>
+            <label htmlFor="lesson-title">Title</label>
+            <input defaultValue={lesson.title} id="lesson-title" name="title" required type="text" />
           </div>
           <div className="field-grid">
             <div>

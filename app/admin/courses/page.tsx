@@ -32,15 +32,9 @@ export default async function AdminCoursesPage({
         <section className="panel lesson-panel">
           <h2>Create course</h2>
           <form action={createCourseAction} className="editor-form stack">
-            <div className="field-grid">
-              <div>
-                <label htmlFor="course-title">Title</label>
-                <input id="course-title" name="title" required type="text" />
-              </div>
-              <div>
-                <label htmlFor="course-slug">Slug</label>
-                <input id="course-slug" name="slug" placeholder="optional-auto-generated" type="text" />
-              </div>
+            <div>
+              <label htmlFor="course-title">Title</label>
+              <input id="course-title" name="title" required type="text" />
             </div>
             <div className="field-grid">
               <div>

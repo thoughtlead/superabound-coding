@@ -4,6 +4,7 @@ import {
   createLessonAction,
   createModuleAction,
   deleteLessonAction,
+  deleteModuleAction,
   moveLessonDownAction,
   moveLessonUpAction,
   moveModuleDownAction,
@@ -89,15 +90,9 @@ export default async function AdminCoursePage({
               </div>
             </div>
             <form action={updateCourse} className="editor-form stack">
-              <div className="field-grid">
-                <div>
-                  <label htmlFor="course-title">Title</label>
-                  <input defaultValue={course.title} id="course-title" name="title" required type="text" />
-                </div>
-                <div>
-                  <label htmlFor="course-slug">Slug</label>
-                  <input defaultValue={course.slug} id="course-slug" name="slug" required type="text" />
-                </div>
+              <div>
+                <label htmlFor="course-title">Title</label>
+                <input defaultValue={course.title} id="course-title" name="title" required type="text" />
               </div>
               <div className="field-grid">
                 <div>
@@ -176,6 +171,7 @@ export default async function AdminCoursePage({
             const updateModule = updateModuleAction.bind(null, course.slug, moduleItem.id);
             const moveModuleUp = moveModuleUpAction.bind(null, course.slug, moduleItem.id);
             const moveModuleDown = moveModuleDownAction.bind(null, course.slug, moduleItem.id);
+            const deleteModule = deleteModuleAction.bind(null, course.slug, moduleItem.id);
             const createLesson = createLessonAction.bind(null, course.slug, moduleItem.id);
 
             return (
@@ -195,6 +191,16 @@ export default async function AdminCoursePage({
                       <button className="button button-secondary" type="submit">
                         Move down
                       </button>
+                    </form>
+                    <form action={deleteModule}>
+                      <ConfirmSubmitButton
+                        ariaLabel={`Delete module ${moduleItem.title}`}
+                        className="button button-danger button-icon-only"
+                        confirmMessage={`Delete the module "${moduleItem.title}"? This will remove all lessons, content blocks, and downloads inside it.`}
+                        title="Delete module"
+                      >
+                        <TrashIcon />
+                      </ConfirmSubmitButton>
                     </form>
                   </div>
                 </div>
@@ -284,15 +290,9 @@ export default async function AdminCoursePage({
 
                 <form action={createLesson} className="editor-form stack editor-subsection">
                   <input name="position" type="hidden" value={moduleItem.lessons.length} />
-                  <div className="field-grid">
-                    <div>
-                      <label htmlFor={`lesson-title-${moduleItem.id}`}>New lesson title</label>
-                      <input id={`lesson-title-${moduleItem.id}`} name="title" required type="text" />
-                    </div>
-                    <div>
-                      <label htmlFor={`lesson-slug-${moduleItem.id}`}>Slug</label>
-                      <input id={`lesson-slug-${moduleItem.id}`} name="slug" type="text" />
-                    </div>
+                  <div>
+                    <label htmlFor={`lesson-title-${moduleItem.id}`}>New lesson title</label>
+                    <input id={`lesson-title-${moduleItem.id}`} name="title" required type="text" />
                   </div>
                   <div className="field-grid">
                     <div>
