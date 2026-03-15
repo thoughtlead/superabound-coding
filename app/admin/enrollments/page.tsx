@@ -1,5 +1,6 @@
 import {
   createEnrollmentAction,
+  inviteMemberAction,
   updateEnrollmentStatusAction,
   updateUserNameAction,
 } from "@/app/admin/actions";
@@ -62,6 +63,54 @@ export default async function AdminEnrollmentsPage({
     >
       {searchParams?.message ? <p className="form-status">{searchParams.message}</p> : null}
       {setupRequired ? <SetupState /> : null}
+
+      {!setupRequired ? (
+        <section className="panel lesson-panel">
+          <h2>Invite member</h2>
+          <form action={inviteMemberAction} className="editor-form stack">
+            <div className="field-grid">
+              <div>
+                <label htmlFor="invite-full-name">Full name</label>
+                <input id="invite-full-name" name="fullName" required type="text" />
+              </div>
+              <div>
+                <label htmlFor="invite-email">Email</label>
+                <input
+                  autoComplete="email"
+                  id="invite-email"
+                  name="email"
+                  required
+                  type="email"
+                />
+              </div>
+            </div>
+            <div className="stack stack-tight">
+              <div>
+                <p className="eyebrow">Course access</p>
+                <h3>Enable courses immediately</h3>
+              </div>
+              <div className="checkbox-grid">
+                {courses.map((course) => (
+                  <label key={course.id} className="checkbox-card">
+                    <input name="courseIds" type="checkbox" value={course.id} />
+                    <span className="checkbox-copy">
+                      <strong>{course.title}</strong>
+                      <span>{course.status}</span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            <p className="form-note">
+              The invite email signs the member in and takes them to password setup before they
+              use the library.
+            </p>
+            <div className="panel-actions">
+              <button type="submit">Invite member</button>
+            </div>
+          </form>
+        </section>
+      ) : null}
 
       {!setupRequired ? (
         <section className="panel lesson-panel">

@@ -1,8 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/utils/auth";
+import { createAdminClient } from "@/utils/supabase/admin";
 
 function getValue(formData: FormData, key: string) {
   return String(formData.get(key) ?? "").trim();
@@ -37,6 +39,34 @@ function slugify(value: string) {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
     .slice(0, 80);
+}
+
+function getMultiValues(formData: FormData, key: string) {
+  return formData
+    .getAll(key)
+    .map((value) => String(value).trim())
+    .filter(Boolean);
+}
+
+function getBaseUrl() {
+  const headerStore = headers();
+  const forwardedProto = headerStore.get("x-forwarded-proto");
+  const forwardedHost = headerStore.get("x-forwarded-host");
+  const host = forwardedHost ?? headerStore.get("host");
+
+  if (host) {
+    return `${forwardedProto ?? "https"}://${host}`;
+  }
+
+  if (process.env.NEXT_PUBLIC_SITE_URL) {
+    return process.env.NEXT_PUBLIC_SITE_URL;
+  }
+
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+
+  return "http://localhost:3000";
 }
 
 async function swapModulePosition(
@@ -464,6 +494,123 @@ export async function createEnrollmentAction(formData: FormData) {
   revalidatePath("/admin/enrollments");
   revalidatePath("/library");
   redirect(withMessage("/admin/enrollments", "Enrollment granted."));
+}
+
+export async function inviteMemberAction(formData: FormData) {
+  await requireAdmin();
+  const adminSupabase = createAdminClient();
+  const email = getValue(formData, "email").toLowerCase();
+  const fullName = getValue(formData, "fullName");
+  const courseIds = getMultiValues(formData, "courseIds");
+
+  if (!email || !fullName) {
+    redirect(withMessage("/admin/enrollments", "Name and email are required."));
+  }
+
+  if (courseIds.length === 0) {
+    redirect(withMessage("/admin/enrollments", "Choose at least one course to enable."));
+  }
+
+  const { data: existingProfile, error: existingProfileError } = await adminSupabase
+    .from("profiles")
+    .select("id")
+    .eq("email", email)
+    .maybeSingle();
+
+  if (existingProfileError) {
+    redirect(withMessage("/admin/enrollments", existingProfileError.message));
+  }
+
+  if (existingProfile) {
+    await adminSupabase.from("profiles").update({ full_name: fullName }).eq("id", existingProfile.id);
+
+    const { error: existingEnrollmentError } = await adminSupabase
+      .from("course_enrollments")
+      .upsert(
+        courseIds.map((courseId) => ({
+          course_id: courseId,
+          user_id: existingProfile.id,
+          status: "active" as const,
+        })),
+        {
+          onConflict: "course_id,user_id",
+        },
+      );
+
+    if (existingEnrollmentError) {
+      redirect(withMessage("/admin/enrollments", existingEnrollmentError.message));
+    }
+
+    revalidatePath("/admin/enrollments");
+    revalidatePath("/library");
+    redirect(
+      withMessage(
+        "/admin/enrollments",
+        "Member already existed. Selected courses have been enabled.",
+      ),
+    );
+  }
+
+  const nextPath = encodeURIComponent(
+    "/account/password?message=Create+your+password+to+finish+setting+up+your+account.",
+  );
+  const redirectTo = `${getBaseUrl()}/auth/callback?next=${nextPath}`;
+
+  const { data: inviteData, error: inviteError } = await adminSupabase.auth.admin.inviteUserByEmail(
+    email,
+    {
+      data: {
+        full_name: fullName,
+      },
+      redirectTo,
+    },
+  );
+
+  if (inviteError || !inviteData.user) {
+    redirect(withMessage("/admin/enrollments", inviteError?.message ?? "Could not invite member."));
+  }
+
+  const invitedUserId = inviteData.user.id;
+
+  const { error: profileError } = await adminSupabase.from("profiles").upsert(
+    {
+      id: invitedUserId,
+      full_name: fullName,
+      email,
+      role: "member",
+    },
+    {
+      onConflict: "id",
+    },
+  );
+
+  if (profileError) {
+    redirect(withMessage("/admin/enrollments", profileError.message));
+  }
+
+  const { error: enrollmentError } = await adminSupabase.from("course_enrollments").upsert(
+    courseIds.map((courseId) => ({
+      course_id: courseId,
+      user_id: invitedUserId,
+      status: "active" as const,
+    })),
+    {
+      onConflict: "course_id,user_id",
+    },
+  );
+
+  if (enrollmentError) {
+    redirect(withMessage("/admin/enrollments", enrollmentError.message));
+  }
+
+  revalidatePath("/admin/enrollments");
+  revalidatePath("/library");
+  redirect(
+    withMessage(
+      "/admin/enrollments",
+      "Invite sent. The member will receive an email and selected courses are ready.",
+    ),
+  );
 }
 
 export async function updateEnrollmentStatusAction(

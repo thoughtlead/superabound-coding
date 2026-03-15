@@ -849,6 +849,45 @@ form {
   padding: 16px 0 2px;
 }
 
+.checkbox-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.checkbox-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid rgba(29, 27, 25, 0.08);
+  border-radius: 18px;
+  background: rgba(247, 247, 250, 0.78);
+}
+
+.checkbox-card input {
+  width: 18px;
+  height: 18px;
+  margin: 2px 0 0;
+  padding: 0;
+  box-shadow: none;
+}
+
+.checkbox-copy {
+  display: grid;
+  gap: 4px;
+}
+
+.checkbox-copy strong {
+  font-size: 0.96rem;
+  line-height: 1.3;
+}
+
+.checkbox-copy span {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
 @media (max-width: 1080px) {
   .course-editor-top {
     grid-template-columns: 1fr;

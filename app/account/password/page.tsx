@@ -2,7 +2,15 @@ import { AppShell } from "@/components/app-shell";
 import { getCurrentProfile, requireUser } from "@/utils/auth";
 import { PasswordForm } from "@/app/account/password/password-form";
 
-export default async function AccountPasswordPage() {
+type AccountPasswordPageProps = {
+  searchParams?: {
+    message?: string;
+  };
+};
+
+export default async function AccountPasswordPage({
+  searchParams,
+}: AccountPasswordPageProps) {
   const { user } = await requireUser();
   const profile = await getCurrentProfile(user.id);
 
@@ -13,6 +21,7 @@ export default async function AccountPasswordPage() {
       showAdmin={profile?.role === "admin"}
     >
       <section className="panel lesson-panel">
+        {searchParams?.message ? <p className="form-status">{searchParams.message}</p> : null}
         <p className="form-note">
           Update the password used to sign in to your library account.
         </p>
