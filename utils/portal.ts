@@ -36,6 +36,13 @@ export function getPortalSlugFromHost(host: string | null | undefined) {
     return DEFAULT_PORTAL_SLUG;
   }
 
+  // Bare Vercel deployment hosts are the app host, not a portal subdomain.
+  // Map them to the default portal so production works before wildcard domains
+  // are configured.
+  if (hostname.endsWith(".vercel.app")) {
+    return DEFAULT_PORTAL_SLUG;
+  }
+
   if (hostname.endsWith(".localhost") || hostname.endsWith(".lvh.me")) {
     const [subdomain] = hostname.split(".");
     return subdomain && !RESERVED_SUBDOMAINS.has(subdomain)
