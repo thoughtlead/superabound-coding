@@ -20,6 +20,16 @@ function getPosition(formData: FormData, key: string) {
   return Number.isFinite(value) ? value : 0;
 }
 
+function getOneBasedPosition(formData: FormData, key: string) {
+  const value = Number(formData.get(key) ?? "1");
+
+  if (!Number.isFinite(value)) {
+    return 0;
+  }
+
+  return Math.max(0, value - 1);
+}
+
 function withMessage(path: string, message: string, extras?: Record<string, string>) {
   const url = new URL(path, "http://localhost");
   url.searchParams.set("message", message);
@@ -427,7 +437,7 @@ export async function createBlockAction(lessonId: string, formData: FormData) {
     media_provider: getValue(formData, "mediaProvider") || null,
     media_url: getValue(formData, "mediaUrl") || null,
     embed_url: getValue(formData, "embedUrl") || null,
-    position: getPosition(formData, "position"),
+    position: getOneBasedPosition(formData, "position"),
   });
 
   if (error) {
@@ -453,7 +463,7 @@ export async function updateBlockAction(
       media_provider: getValue(formData, "mediaProvider") || null,
       media_url: getValue(formData, "mediaUrl") || null,
       embed_url: getValue(formData, "embedUrl") || null,
-      position: getPosition(formData, "position"),
+      position: getOneBasedPosition(formData, "position"),
     })
     .eq("id", blockId);
 

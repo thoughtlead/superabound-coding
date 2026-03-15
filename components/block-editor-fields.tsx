@@ -109,8 +109,9 @@ export function BlockEditorFields({
         <div>
           <label htmlFor={`${prefix}-position`}>Position</label>
           <input
-            defaultValue={initialPosition}
+            defaultValue={initialPosition + 1}
             id={`${prefix}-position`}
+            min={1}
             name="position"
             type="number"
           />
