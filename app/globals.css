@@ -263,6 +263,17 @@ form {
   text-transform: uppercase;
 }
 
+.eyebrow-link {
+  color: inherit;
+  border-bottom: 1px solid transparent;
+  transition: color 140ms ease, border-color 140ms ease;
+}
+
+.eyebrow-link:hover {
+  color: #4c443d;
+  border-color: rgba(76, 68, 61, 0.28);
+}
+
 .panel {
   border: 1px solid rgba(29, 27, 25, 0.08);
   border-radius: var(--radius-panel);

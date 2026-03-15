@@ -56,7 +56,15 @@ export default async function AdminCoursePage({
   return (
     <AppShell
       title={course.title}
-      eyebrow="Admin / Course editor"
+      eyebrow={
+        <>
+          <Link className="eyebrow-link" href="/admin/courses">
+            Admin
+          </Link>
+          {" / "}
+          <span>Course editor</span>
+        </>
+      }
       showAdmin
       actions={<span className="stat-chip">{getCourseLessonCount(course)} lessons</span>}
     >
@@ -173,7 +181,7 @@ export default async function AdminCoursePage({
           const createLesson = createLessonAction.bind(null, course.slug, moduleItem.id);
 
           return (
-            <article key={moduleItem.id} className="panel module-card">
+            <article id={`module-${moduleItem.id}`} key={moduleItem.id} className="panel module-card">
               <div className="row-spread">
                 <div>
                   <p className="eyebrow">Module {moduleItem.position + 1}</p>

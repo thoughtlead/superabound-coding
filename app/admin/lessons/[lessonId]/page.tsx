@@ -56,7 +56,24 @@ export default async function AdminLessonPage({
   return (
     <AppShell
       title={lesson.title}
-      eyebrow={`Admin / ${lesson.courseTitle} / ${lesson.moduleTitle}`}
+      eyebrow={
+        <>
+          <Link className="eyebrow-link" href="/admin/courses">
+            Admin
+          </Link>
+          {" / "}
+          <Link className="eyebrow-link" href={`/admin/courses/${lesson.courseSlug}`}>
+            {lesson.courseTitle}
+          </Link>
+          {" / "}
+          <Link
+            className="eyebrow-link"
+            href={`/admin/courses/${lesson.courseSlug}#module-${lesson.moduleId}`}
+          >
+            {lesson.moduleTitle}
+          </Link>
+        </>
+      }
       showAdmin
       actions={
         <Link className="button button-secondary" href={`/admin/courses/${lesson.courseSlug}`}>
