@@ -211,7 +211,22 @@ function mapLesson(row: LessonRow): CourseLesson {
   };
 }
 
-function mapCourse(row: CourseRow): CourseDetail {
+function mapCourse(row: CourseRow, publishedOnly = false): CourseDetail {
+  const modules = (row.modules ?? [])
+    .filter((moduleRow) => !publishedOnly || moduleRow.status === "published")
+    .sort((left, right) => left.position - right.position)
+    .map((moduleRow) => ({
+      id: moduleRow.id,
+      title: moduleRow.title,
+      description: moduleRow.description,
+      position: moduleRow.position,
+      status: moduleRow.status,
+      lessons: (moduleRow.lessons ?? [])
+        .filter((lessonRow) => !publishedOnly || lessonRow.status === "published")
+        .sort((left, right) => left.position - right.position)
+        .map(mapLesson),
+    }));
+
   return {
     id: row.id,
     slug: row.slug,
@@ -221,18 +236,7 @@ function mapCourse(row: CourseRow): CourseDetail {
     thumbnailUrl: row.thumbnail_url,
     status: row.status,
     createdAt: row.created_at,
-    modules: (row.modules ?? [])
-      .sort((left, right) => left.position - right.position)
-      .map((moduleRow) => ({
-        id: moduleRow.id,
-        title: moduleRow.title,
-        description: moduleRow.description,
-        position: moduleRow.position,
-        status: moduleRow.status,
-        lessons: (moduleRow.lessons ?? [])
-          .sort((left, right) => left.position - right.position)
-          .map(mapLesson),
-      })),
+    modules,
   };
 }
 
@@ -361,7 +365,7 @@ export async function getAccessibleCourse(
 
   return {
     setupRequired: state.setupRequired,
-    course: state.data ? mapCourse(state.data) : null,
+    course: state.data ? mapCourse(state.data, true) : null,
   };
 }
 
