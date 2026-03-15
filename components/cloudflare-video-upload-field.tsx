@@ -5,6 +5,7 @@ import { ChangeEvent, useEffect, useId, useRef, useState } from "react";
 import * as tus from "tus-js-client";
 
 type CloudflareVideoUploadFieldProps = {
+  currentEmbedUrl?: string | null;
   onUploaded: (values: {
     embedUrl: string;
     mediaProvider: string;
@@ -53,6 +54,7 @@ function formatProcessingMessage(status: CloudflareVideoStatus) {
 }
 
 export function CloudflareVideoUploadField({
+  currentEmbedUrl,
   onUploaded,
 }: CloudflareVideoUploadFieldProps) {
   const fileInputId = useId();
@@ -240,6 +242,16 @@ export function CloudflareVideoUploadField({
   return (
     <div className="upload-field">
       <label>Cloudflare video upload</label>
+      {currentEmbedUrl ? (
+        <div className="media-frame">
+          <iframe
+            allow="autoplay; fullscreen; picture-in-picture"
+            allowFullScreen
+            src={currentEmbedUrl}
+            title="Cloudflare video preview"
+          />
+        </div>
+      ) : null}
       <div className="upload-actions">
         <input
           accept="video/*"

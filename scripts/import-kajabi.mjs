@@ -133,6 +133,10 @@ function getExtensionFromContentType(contentType) {
     return ".gif";
   }
 
+  if (normalized === "application/pdf") {
+    return ".pdf";
+  }
+
   return "";
 }
 
@@ -191,9 +195,58 @@ async function copyThumbnailToSupabaseStorage(supabase, thumbnailUrl, context) {
   return data.publicUrl;
 }
 
+function buildDownloadObjectPath(context, sourceUrl, contentType) {
+  const sourceName = slugSegment(
+    path.basename(getUrlBasename(sourceUrl), path.extname(getUrlBasename(sourceUrl))),
+    "download",
+  );
+  const extension =
+    getExtensionFromContentType(contentType) || getExtensionFromUrl(sourceUrl) || ".pdf";
+
+  return `lesson-downloads/imports/${slugSegment(context.courseSlug, "course")}/${slugSegment(
+    context.lessonSlug,
+    "lesson",
+  )}-${sourceName}${extension}`;
+}
+
+async function copyDownloadToSupabaseStorage(supabase, fileUrl, context) {
+  if (!fileUrl) {
+    return null;
+  }
+
+  if (fileUrl.includes("/storage/v1/object/public/library-assets/")) {
+    return fileUrl;
+  }
+
+  const normalizedUrl = normalizeRemoteAssetUrl(fileUrl);
+  const response = await fetch(normalizedUrl);
+
+  if (!response.ok) {
+    throw new Error(
+      `Could not download file for "${context.label}": ${response.status} ${response.statusText}`,
+    );
+  }
+
+  const contentType = response.headers.get("content-type") ?? "application/octet-stream";
+  const objectPath = buildDownloadObjectPath(context, normalizedUrl, contentType);
+  const fileBuffer = Buffer.from(await response.arrayBuffer());
+
+  const { error: uploadError } = await supabase.storage.from(STORAGE_BUCKET).upload(objectPath, fileBuffer, {
+    contentType,
+    upsert: true,
+  });
+
+  if (uploadError) {
+    throw new Error(`Could not upload file for "${context.label}": ${uploadError.message}`);
+  }
+
+  const { data } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(objectPath);
+  return data.publicUrl;
+}
+
 function normalizeBlock(block, index) {
   const type = block.type === "rich_text" ? "rich_text" : block.type;
-  const supportedTypes = new Set(["video", "audio", "rich_text", "download"]);
+  const supportedTypes = new Set(["video", "audio", "rich_text", "download", "image"]);
 
   if (!supportedTypes.has(type)) {
     throw new Error(`Unsupported lesson block type: ${block.type}`);
@@ -386,6 +439,32 @@ async function resolveLessonBlocks(lesson, context) {
       continue;
     }
 
+    if (block.block_type === "download" && block.media_url) {
+      resolvedBlocks.push({
+        ...block,
+        media_url: await copyDownloadToSupabaseStorage(context.supabase, block.media_url, {
+          label: block.title ?? context.lessonTitle,
+          courseSlug: context.courseSlug,
+          lessonSlug: context.lessonSlug,
+        }),
+      });
+      continue;
+    }
+
+    if (block.block_type === "image" && block.media_url) {
+      resolvedBlocks.push({
+        ...block,
+        media_provider: "supabase-storage",
+        media_url: await copyThumbnailToSupabaseStorage(context.supabase, block.media_url, {
+          kind: "lesson",
+          label: block.title ?? context.lessonTitle,
+          courseSlug: context.courseSlug,
+          lessonSlug: `${context.lessonSlug}-${block.position}`,
+        }),
+      });
+      continue;
+    }
+
     resolvedBlocks.push(block);
   }
 
@@ -407,6 +486,19 @@ async function resolveLessonThumbnail(supabase, course, lesson) {
     courseSlug: course.slug,
     lessonSlug: lesson.slug,
   });
+}
+
+async function resolveLessonDownloads(supabase, course, lesson) {
+  return Promise.all(
+    lesson.downloads.map(async (download) => ({
+      ...download,
+      file_url: await copyDownloadToSupabaseStorage(supabase, download.file_url, {
+        label: download.title,
+        courseSlug: course.slug,
+        lessonSlug: lesson.slug,
+      }),
+    })),
+  );
 }
 
 async function importCourses(supabase, courses, cloudflareConfig) {
@@ -497,7 +589,11 @@ async function importCourses(supabase, courses, cloudflareConfig) {
           ...cloudflareConfig,
           courseTitle: course.title,
           lessonTitle: lesson.title,
+          courseSlug: course.slug,
+          lessonSlug: lesson.slug,
+          supabase,
         });
+        const resolvedDownloads = await resolveLessonDownloads(supabase, course, lesson);
 
         if (resolvedBlocks.length > 0) {
           const { error: blockError } = await supabase.from("lesson_blocks").insert(
@@ -520,9 +616,9 @@ async function importCourses(supabase, courses, cloudflareConfig) {
           }
         }
 
-        if (lesson.downloads.length > 0) {
+        if (resolvedDownloads.length > 0) {
           const { error: downloadError } = await supabase.from("lesson_downloads").insert(
-            lesson.downloads.map((download) => ({
+            resolvedDownloads.map((download) => ({
               ...download,
               lesson_id: createdLesson.id,
             })),

@@ -16,6 +16,7 @@ type StorageUploadFieldProps = {
   allowUpload?: boolean;
   initialValue?: string | null;
   onChange?: (value: string) => void;
+  onUploadComplete?: (payload: { fileName: string; publicUrl: string }) => void;
   placeholder?: string;
   type?: "text" | "url";
   value?: string;
@@ -23,6 +24,21 @@ type StorageUploadFieldProps = {
 
 function sanitizeFilename(filename: string) {
   return filename.replace(/[^a-zA-Z0-9.-]+/g, "-").toLowerCase();
+}
+
+function getFileNameFromUrl(value: string) {
+  try {
+    const parsed = new URL(value);
+    const rawName = parsed.pathname.split("/").pop() ?? "downloaded-file";
+    return decodeURIComponent(rawName);
+  } catch {
+    return "downloaded-file";
+  }
+}
+
+function getFileBadgeLabel(fileName: string) {
+  const ext = fileName.split(".").pop()?.trim().toUpperCase();
+  return ext && ext.length <= 4 ? ext : "FILE";
 }
 
 export function StorageUploadField({
@@ -34,6 +50,7 @@ export function StorageUploadField({
   allowUpload = true,
   initialValue,
   onChange,
+  onUploadComplete,
   placeholder = "https://...",
   type = "url",
   value: controlledValue,
@@ -46,6 +63,8 @@ export function StorageUploadField({
   const [showUrlInput, setShowUrlInput] = useState(false);
   const value = controlledValue ?? internalValue;
   const isImageField = accept?.includes("image/") ?? false;
+  const displayFileName = value ? getFileNameFromUrl(value) : "";
+  const fileBadgeLabel = displayFileName ? getFileBadgeLabel(displayFileName) : "FILE";
 
   useEffect(() => {
     if (controlledValue === undefined) {
@@ -96,6 +115,10 @@ export function StorageUploadField({
     updateValue(publicUrl);
     setMessage("Upload complete.");
     setUploading(false);
+    onUploadComplete?.({
+      fileName: file.name,
+      publicUrl,
+    });
   };
 
   return (
@@ -121,12 +144,32 @@ export function StorageUploadField({
           ) : null}
         </div>
       ) : (
-        <input
-          type={type}
-          value={value}
-          onChange={(event) => updateValue(event.target.value)}
-          placeholder={placeholder}
-        />
+        <div className="file-upload-field">
+          {value ? (
+            <a
+              className="file-upload-preview"
+              href={value}
+              rel="noreferrer"
+              target="_blank"
+            >
+              <span className="file-upload-icon">{fileBadgeLabel}</span>
+              <span className="file-upload-copy">
+                <strong>{displayFileName}</strong>
+                <span>Open or download file</span>
+              </span>
+            </a>
+          ) : (
+            <div className="image-upload-empty">No file selected</div>
+          )}
+          {showUrlInput || !value ? (
+            <input
+              type={type}
+              value={value}
+              onChange={(event) => updateValue(event.target.value)}
+              placeholder={placeholder}
+            />
+          ) : null}
+        </div>
       )}
       {allowUpload ? (
         <div className="upload-actions">
@@ -143,15 +186,19 @@ export function StorageUploadField({
           <span className="file-picker-name">
             {selectedFileName || "No file selected"}
           </span>
-          {isImageField ? (
-            <button
-              className="button button-secondary"
-              onClick={() => setShowUrlInput((current) => !current)}
-              type="button"
-            >
-              {showUrlInput || !value ? "Hide image URL" : "Paste image URL"}
-            </button>
-          ) : null}
+          <button
+            className="button button-secondary"
+            onClick={() => setShowUrlInput((current) => !current)}
+            type="button"
+          >
+            {isImageField
+              ? showUrlInput || !value
+                ? "Hide image URL"
+                : "Paste image URL"
+              : showUrlInput || !value
+                ? "Hide file URL"
+                : "Paste file URL"}
+          </button>
           {uploading ? <span className="form-note">Uploading...</span> : null}
         </div>
       ) : null}

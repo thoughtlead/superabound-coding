@@ -1,3 +1,5 @@
+/* eslint-disable @next/next/no-img-element */
+
 import { LessonBlock } from "@/utils/library";
 
 type MediaBlockProps = {
@@ -82,6 +84,21 @@ export function MediaBlock({ block, variant = "default" }: MediaBlockProps) {
         ) : (
           <p>Audio URL missing.</p>
         )}
+      </section>
+    );
+  }
+
+  if (block.type === "image" && block.mediaUrl) {
+    return (
+      <section className="panel lesson-panel">
+        <figure className="content-image">
+          <img
+            alt={block.title ?? "Lesson image"}
+            className="content-image-asset"
+            src={block.mediaUrl}
+          />
+          {block.title ? <figcaption>{block.title}</figcaption> : null}
+        </figure>
       </section>
     );
   }

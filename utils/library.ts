@@ -56,7 +56,7 @@ type CourseRow = {
 
 type LessonBlockRow = {
   id: string;
-  block_type: "video" | "audio" | "rich_text" | "download";
+  block_type: "video" | "audio" | "rich_text" | "download" | "image";
   title: string | null;
   body: string | null;
   media_provider: string | null;
@@ -125,7 +125,7 @@ export type CourseDetail = {
 
 export type LessonBlock = {
   id: string;
-  type: "video" | "audio" | "rich_text" | "download";
+  type: "video" | "audio" | "rich_text" | "download" | "image";
   title: string | null;
   body: string | null;
   mediaProvider: string | null;

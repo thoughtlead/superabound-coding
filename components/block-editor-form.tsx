@@ -12,7 +12,8 @@ type BlockEditorFormProps = {
   initialMediaUrl?: string | null;
   initialPosition?: number;
   initialTitle?: string | null;
-  initialType?: "video" | "audio" | "rich_text" | "download";
+  initialType?: "video" | "audio" | "rich_text" | "download" | "image";
+  onTypeChange?: (value: "video" | "audio" | "rich_text" | "download" | "image") => void;
   secondaryActions?: ReactNode;
   statusMessage?: string;
   prefix: string;
@@ -28,6 +29,7 @@ export function BlockEditorForm({
   initialPosition,
   initialTitle,
   initialType,
+  onTypeChange,
   secondaryActions,
   statusMessage,
   prefix,
@@ -52,6 +54,7 @@ export function BlockEditorForm({
         initialPosition={initialPosition}
         initialTitle={initialTitle}
         initialType={initialType}
+        onTypeChange={onTypeChange}
         onVideoUploaded={handleVideoUploaded}
         prefix={prefix}
       />

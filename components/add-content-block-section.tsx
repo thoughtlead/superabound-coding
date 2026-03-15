@@ -1,0 +1,64 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { BlockEditorForm } from "@/components/block-editor-form";
+
+type AddContentBlockSectionProps = {
+  action: (formData: FormData) => void | Promise<void>;
+  initialPosition: number;
+  refreshKey: string;
+};
+
+const TYPE_LABELS = {
+  audio: "Add audio block",
+  download: "Add download block",
+  image: "Add image block",
+  rich_text: "Add rich text block",
+  video: "Add video block",
+} as const;
+
+export function AddContentBlockSection({
+  action,
+  initialPosition,
+  refreshKey,
+}: AddContentBlockSectionProps) {
+  const [open, setOpen] = useState(false);
+  const [blockType, setBlockType] = useState<
+    "video" | "audio" | "rich_text" | "download" | "image"
+  >("rich_text");
+
+  const heading = useMemo(() => TYPE_LABELS[blockType], [blockType]);
+
+  return (
+    <section className="panel lesson-panel">
+      {!open ? (
+        <div className="panel-actions">
+          <button onClick={() => setOpen(true)} type="button">
+            Add content block
+          </button>
+        </div>
+      ) : (
+        <>
+          <div className="row-spread">
+            <h2>{heading}</h2>
+            <button
+              className="button button-secondary"
+              onClick={() => setOpen(false)}
+              type="button"
+            >
+              Cancel
+            </button>
+          </div>
+          <BlockEditorForm
+            action={action}
+            initialPosition={initialPosition}
+            key={`create-block-${refreshKey}`}
+            onTypeChange={setBlockType}
+            prefix={`new-block-${refreshKey}`}
+            submitLabel={heading}
+          />
+        </>
+      )}
+    </section>
+  );
+}

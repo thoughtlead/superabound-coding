@@ -9,8 +9,10 @@ import {
   updateDownloadAction,
   updateLessonAction,
 } from "@/app/admin/actions";
+import { AddContentBlockSection } from "@/components/add-content-block-section";
 import { AppShell } from "@/components/app-shell";
 import { BlockEditorForm } from "@/components/block-editor-form";
+import { DownloadEditorForm } from "@/components/download-editor-form";
 import { SetupState } from "@/components/setup-state";
 import { StorageUploadField } from "@/components/storage-upload-field";
 import { requireAdmin } from "@/utils/auth";
@@ -133,11 +135,9 @@ export default async function AdminLessonPage({
                 prefix={`block-${block.id}`}
                 statusMessage={showBlockSaved ? "Block saved" : undefined}
                 secondaryActions={
-                  <form action={deleteBlock}>
-                    <button className="button button-secondary" type="submit">
-                      Delete block
-                    </button>
-                  </form>
+                  <button className="button button-secondary" formAction={deleteBlock} type="submit">
+                    Delete block
+                  </button>
                 }
                 submitLabel="Save block"
               />
@@ -146,16 +146,11 @@ export default async function AdminLessonPage({
         })}
       </section>
 
-      <section className="panel lesson-panel">
-        <h2>Add content block</h2>
-        <BlockEditorForm
-          action={createBlock}
-          initialPosition={lesson.blocks.length}
-          key={`create-block-${refreshKey}`}
-          prefix={`new-block-${refreshKey}`}
-          submitLabel="Add content block"
-        />
-      </section>
+      <AddContentBlockSection
+        action={createBlock}
+        initialPosition={lesson.blocks.length}
+        refreshKey={refreshKey}
+      />
 
       <section className="panel lesson-panel">
         <h2>Lesson downloads</h2>
@@ -166,44 +161,19 @@ export default async function AdminLessonPage({
 
             return (
               <section key={download.id} className="download-editor">
-                <form action={updateDownload} className="editor-form stack">
-                  <div className="field-grid">
-                    <div>
-                      <label htmlFor={`download-title-${download.id}`}>Title</label>
-                      <input
-                        defaultValue={download.title}
-                        id={`download-title-${download.id}`}
-                        name="title"
-                        required
-                        type="text"
-                      />
-                    </div>
-                    <div>
-                      <label htmlFor={`download-position-${download.id}`}>Position</label>
-                      <input
-                        defaultValue={download.position}
-                        id={`download-position-${download.id}`}
-                        name="position"
-                        type="number"
-                      />
-                    </div>
-                  </div>
-                  <StorageUploadField
-                    folder="lesson-downloads"
-                    helpText="Upload a file or paste a download URL."
-                    initialValue={download.fileUrl}
-                    label="File"
-                    name="fileUrl"
-                  />
-                  <div className="panel-actions">
-                    <button type="submit">Save download</button>
-                  </div>
-                </form>
-                <form action={deleteDownload}>
-                  <button className="button button-secondary" type="submit">
-                    Delete download
-                  </button>
-                </form>
+                <DownloadEditorForm
+                  action={updateDownload}
+                  initialFileUrl={download.fileUrl}
+                  initialPosition={download.position}
+                  initialTitle={download.title}
+                  secondaryActions={
+                    <button className="button button-secondary" formAction={deleteDownload} type="submit">
+                      Delete download
+                    </button>
+                  }
+                  submitLabel="Save download"
+                  titleInputId={`download-title-${download.id}`}
+                />
               </section>
             );
           })}
@@ -212,22 +182,14 @@ export default async function AdminLessonPage({
 
       <section className="panel lesson-panel">
         <h2>Add lesson download</h2>
-        <form action={createDownload} className="editor-form stack" key={`create-download-${refreshKey}`}>
-          <input name="position" type="hidden" value={lesson.downloads.length} />
-          <div>
-            <label htmlFor="new-download-title">Title</label>
-            <input id="new-download-title" name="title" required type="text" />
-          </div>
-          <StorageUploadField
-            folder="lesson-downloads"
-            helpText="Upload the file or paste an external download URL."
-            label="File"
-            name="fileUrl"
-          />
-          <div className="panel-actions">
-            <button type="submit">Add download</button>
-          </div>
-        </form>
+        <DownloadEditorForm
+          action={createDownload}
+          initialPosition={lesson.downloads.length}
+          key={`create-download-${refreshKey}`}
+          showPosition={false}
+          submitLabel="Add lesson download"
+          titleInputId="new-download-title"
+        />
       </section>
     </AppShell>
   );
