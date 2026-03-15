@@ -54,7 +54,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
           <article key={moduleItem.id} className="panel module-card">
             <div className="module-head">
               <div>
-                <p className="eyebrow">Module {moduleItem.position + 1}</p>
+                <p className="eyebrow">Topic {moduleItem.position + 1}</p>
                 <h2>{moduleItem.title}</h2>
                 {moduleItem.description ? <p>{moduleItem.description}</p> : null}
               </div>

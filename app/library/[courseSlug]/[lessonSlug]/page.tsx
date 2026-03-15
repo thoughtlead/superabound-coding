@@ -136,7 +136,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
             {activeModule ? (
               <section className="stack stack-tight">
                 <div>
-                  <p className="eyebrow">Current module</p>
+                  <p className="eyebrow">Current topic</p>
                   <h2>{activeModule.title}</h2>
                   {activeModule.description ? <p>{activeModule.description}</p> : null}
                 </div>

@@ -129,10 +129,10 @@ export default async function AdminCoursePage({
             <div className="course-add-module-header">
               <div>
                 <p className="eyebrow">Course outline</p>
-                <h2>Add module</h2>
-                <p>Add the next module here, then manage lesson order in the outline below.</p>
+                <h2>Add topic</h2>
+                <p>Add the next topic here, then manage lesson order in the outline below.</p>
               </div>
-              {showModuleAddedTag ? <span className="stat-chip">Module added</span> : null}
+              {showModuleAddedTag ? <span className="stat-chip">Topic added</span> : null}
             </div>
             <form key={moduleFormKey} action={createModule} className="editor-form stack">
               <input name="position" type="hidden" value={course.modules.length} />
@@ -154,7 +154,7 @@ export default async function AdminCoursePage({
                 <textarea id="module-description" name="description" rows={3} />
               </div>
               <div className="panel-actions">
-                <button type="submit">Add module</button>
+                <button type="submit">Add topic</button>
               </div>
             </form>
           </section>
@@ -164,7 +164,7 @@ export default async function AdminCoursePage({
           <div className="course-outline-header">
             <div>
               <p className="eyebrow">Course outline</p>
-              <h2>Modules and lessons</h2>
+              <h2>Topics and lessons</h2>
             </div>
           </div>
           {course.modules.map((moduleItem) => {
@@ -178,7 +178,7 @@ export default async function AdminCoursePage({
               <article id={`module-${moduleItem.id}`} key={moduleItem.id} className="panel module-card">
                 <div className="row-spread">
                   <div>
-                    <p className="eyebrow">Module {moduleItem.position + 1}</p>
+                    <p className="eyebrow">Topic {moduleItem.position + 1}</p>
                     <h2>{moduleItem.title}</h2>
                   </div>
                   <div className="inline-actions">
@@ -194,10 +194,10 @@ export default async function AdminCoursePage({
                     </form>
                     <form action={deleteModule}>
                       <ConfirmSubmitButton
-                        ariaLabel={`Delete module ${moduleItem.title}`}
+                        ariaLabel={`Delete topic ${moduleItem.title}`}
                         className="button button-danger button-icon-only"
-                        confirmMessage={`Delete the module "${moduleItem.title}"? This will remove all lessons, content blocks, and downloads inside it.`}
-                        title="Delete module"
+                        confirmMessage={`Delete the topic "${moduleItem.title}"? This will remove all lessons, content blocks, and downloads inside it.`}
+                        title="Delete topic"
                       >
                         <TrashIcon />
                       </ConfirmSubmitButton>
@@ -239,7 +239,7 @@ export default async function AdminCoursePage({
                     />
                   </div>
                   <div className="panel-actions">
-                    <button type="submit">Save module</button>
+                    <button type="submit">Save topic</button>
                   </div>
                 </form>
 

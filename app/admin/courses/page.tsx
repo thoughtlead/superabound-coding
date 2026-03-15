@@ -69,7 +69,7 @@ export default async function AdminCoursesPage({
       {!setupRequired && courses.length === 0 ? (
         <EmptyState
           title="No courses yet"
-          body="Create your first course here, then add modules and lessons from the course editor."
+          body="Create your first course here, then add topics and lessons from the course editor."
         />
       ) : null}
       {!setupRequired ? (

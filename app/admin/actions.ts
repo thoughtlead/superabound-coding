@@ -76,7 +76,7 @@ async function swapModulePosition(
     .maybeSingle();
 
   if (moduleError || !moduleItem) {
-    redirect(withMessage(`/admin/courses/${courseSlug}`, "Module not found."));
+    redirect(withMessage(`/admin/courses/${courseSlug}`, "Topic not found."));
   }
 
   const adjacentModuleQuery = supabase
@@ -94,7 +94,7 @@ async function swapModulePosition(
   }
 
   if (!adjacentModule) {
-    redirect(withMessage(`/admin/courses/${courseSlug}`, "Module is already at the edge."));
+    redirect(withMessage(`/admin/courses/${courseSlug}`, "Topic is already at the edge."));
   }
 
   await supabase.from("modules").update({ position: -1 }).eq("id", moduleItem.id);
@@ -105,7 +105,7 @@ async function swapModulePosition(
   await supabase.from("modules").update({ position: adjacentModule.position }).eq("id", moduleItem.id);
 
   revalidatePath(`/admin/courses/${courseSlug}`);
-  redirect(withMessage(`/admin/courses/${courseSlug}`, "Module order updated."));
+  redirect(withMessage(`/admin/courses/${courseSlug}`, "Topic order updated."));
 }
 
 async function swapLessonPosition(
@@ -274,7 +274,7 @@ export async function createModuleAction(courseSlug: string, courseId: string, f
   const title = getValue(formData, "title");
 
   if (!title) {
-    redirect(withMessage(`/admin/courses/${courseSlug}`, "Module title is required."));
+    redirect(withMessage(`/admin/courses/${courseSlug}`, "Topic title is required."));
   }
 
   const { error } = await supabase.from("modules").insert({
@@ -291,7 +291,7 @@ export async function createModuleAction(courseSlug: string, courseId: string, f
 
   revalidatePath(`/admin/courses/${courseSlug}`);
   redirect(
-    withMessage(`/admin/courses/${courseSlug}`, "Module added.", {
+    withMessage(`/admin/courses/${courseSlug}`, "Topic added.", {
       moduleAdded: "1",
       moduleFormKey: String(Date.now()),
     }),
@@ -307,7 +307,7 @@ export async function updateModuleAction(
   const title = getValue(formData, "title");
 
   if (!title) {
-    redirect(withMessage(`/admin/courses/${courseSlug}`, "Module title is required."));
+    redirect(withMessage(`/admin/courses/${courseSlug}`, "Topic title is required."));
   }
 
   const { error } = await supabase
@@ -324,7 +324,7 @@ export async function updateModuleAction(
   }
 
   revalidatePath(`/admin/courses/${courseSlug}`);
-  redirect(withMessage(`/admin/courses/${courseSlug}`, "Module updated."));
+  redirect(withMessage(`/admin/courses/${courseSlug}`, "Topic updated."));
 }
 
 export async function moveModuleUpAction(courseSlug: string, moduleId: string) {
@@ -385,7 +385,7 @@ export async function deleteModuleAction(courseSlug: string, moduleId: string) {
 
   revalidatePath(`/admin/courses/${courseSlug}`);
   revalidatePath("/library");
-  redirect(withMessage(`/admin/courses/${courseSlug}`, "Module deleted."));
+  redirect(withMessage(`/admin/courses/${courseSlug}`, "Topic deleted."));
 }
 
 export async function createLessonAction(
