@@ -1,9 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/utils/auth";
+import { getRequestBaseUrl } from "@/utils/portal";
 import { createAdminClient } from "@/utils/supabase/admin";
 
 function getValue(formData: FormData, key: string) {
@@ -61,27 +61,6 @@ function getMultiValues(formData: FormData, key: string) {
 function getReturnPath(formData: FormData, fallbackPath: string) {
   const returnTo = getValue(formData, "returnTo");
   return returnTo.startsWith("/") ? returnTo : fallbackPath;
-}
-
-function getBaseUrl() {
-  const headerStore = headers();
-  const forwardedProto = headerStore.get("x-forwarded-proto");
-  const forwardedHost = headerStore.get("x-forwarded-host");
-  const host = forwardedHost ?? headerStore.get("host");
-
-  if (host) {
-    return `${forwardedProto ?? "https"}://${host}`;
-  }
-
-  if (process.env.NEXT_PUBLIC_SITE_URL) {
-    return process.env.NEXT_PUBLIC_SITE_URL;
-  }
-
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
-  }
-
-  return "http://localhost:3000";
 }
 
 async function swapModulePosition(
@@ -214,7 +193,7 @@ async function rebalanceLessonBlockPositions(
 }
 
 export async function createCourseAction(formData: FormData) {
-  const { supabase, user } = await requireAdmin();
+  const { supabase, user, portal } = await requireAdmin();
   const title = getValue(formData, "title");
 
   if (!title) {
@@ -230,6 +209,7 @@ export async function createCourseAction(formData: FormData) {
       description: getValue(formData, "description") || null,
       thumbnail_url: getValue(formData, "thumbnailUrl") || null,
       status: getStatus(formData),
+      portal_id: portal.id,
       created_by: user.id,
     })
     .select("slug")
@@ -664,7 +644,7 @@ export async function createEnrollmentAction(formData: FormData) {
 }
 
 export async function inviteMemberAction(formData: FormData) {
-  await requireAdmin();
+  const { supabase, portal } = await requireAdmin();
   const adminSupabase = createAdminClient();
   const email = getValue(formData, "email").toLowerCase();
   const fullName = getValue(formData, "fullName");
@@ -676,6 +656,20 @@ export async function inviteMemberAction(formData: FormData) {
 
   if (courseIds.length === 0) {
     redirect(withMessage("/admin/enrollments", "Choose at least one course to enable."));
+  }
+
+  const { data: availableCourses, error: availableCoursesError } = await supabase
+    .from("courses")
+    .select("id")
+    .eq("portal_id", portal.id)
+    .in("id", courseIds);
+
+  if (availableCoursesError) {
+    redirect(withMessage("/admin/enrollments", availableCoursesError.message));
+  }
+
+  if ((availableCourses ?? []).length !== courseIds.length) {
+    redirect(withMessage("/admin/enrollments", "Choose courses from the current portal only."));
   }
 
   const { data: existingProfile, error: existingProfileError } = await adminSupabase
@@ -690,6 +684,28 @@ export async function inviteMemberAction(formData: FormData) {
 
   if (existingProfile) {
     await adminSupabase.from("profiles").update({ full_name: fullName }).eq("id", existingProfile.id);
+    const { data: existingMembership, error: membershipLookupError } = await adminSupabase
+      .from("portal_memberships")
+      .select("id")
+      .eq("portal_id", portal.id)
+      .eq("user_id", existingProfile.id)
+      .maybeSingle();
+
+    if (membershipLookupError) {
+      redirect(withMessage("/admin/enrollments", membershipLookupError.message));
+    }
+
+    if (!existingMembership) {
+      const { error: membershipError } = await adminSupabase.from("portal_memberships").insert({
+        portal_id: portal.id,
+        user_id: existingProfile.id,
+        role: "member",
+      });
+
+      if (membershipError) {
+        redirect(withMessage("/admin/enrollments", membershipError.message));
+      }
+    }
 
     const { error: existingEnrollmentError } = await adminSupabase
       .from("course_enrollments")
@@ -721,7 +737,7 @@ export async function inviteMemberAction(formData: FormData) {
   const nextPath = encodeURIComponent(
     "/create-account?message=Create+your+password+to+finish+setting+up+your+account.",
   );
-  const redirectTo = `${getBaseUrl()}/auth/callback?next=${nextPath}`;
+  const redirectTo = `${getRequestBaseUrl()}/auth/callback?next=${nextPath}`;
 
   const { data: inviteData, error: inviteError } = await adminSupabase.auth.admin.inviteUserByEmail(
     email,
@@ -753,6 +769,16 @@ export async function inviteMemberAction(formData: FormData) {
 
   if (profileError) {
     redirect(withMessage("/admin/enrollments", profileError.message));
+  }
+
+  const { error: membershipError } = await adminSupabase.from("portal_memberships").insert({
+    portal_id: portal.id,
+    user_id: invitedUserId,
+    role: "member",
+  });
+
+  if (membershipError && membershipError.code !== "23505") {
+    redirect(withMessage("/admin/enrollments", membershipError.message));
   }
 
   const { error: enrollmentError } = await adminSupabase.from("course_enrollments").upsert(
@@ -827,6 +853,55 @@ export async function updateUserNameAction(userId: string, formData: FormData) {
   revalidatePath("/admin/enrollments");
   revalidatePath("/account");
   redirect(withMessage(returnPath, "Member name updated."));
+}
+
+export async function sendMemberSetupEmailAction(userId: string, formData: FormData) {
+  const { supabase } = await requireAdmin();
+  const adminSupabase = createAdminClient();
+  const returnPath = getReturnPath(formData, "/admin/enrollments");
+
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("email")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (profileError) {
+    redirect(withMessage(returnPath, profileError.message));
+  }
+
+  if (!profile?.email) {
+    redirect(withMessage(returnPath, "Member email not found."));
+  }
+
+  const { data: authUser, error: authUserError } = await adminSupabase.auth.admin.getUserById(userId);
+
+  if (authUserError) {
+    redirect(withMessage(returnPath, authUserError.message));
+  }
+
+  if (!authUser.user?.email) {
+    redirect(withMessage(returnPath, "Auth account not found for this member."));
+  }
+
+  const nextPath = encodeURIComponent(
+    "/create-account?message=Create+your+password+to+finish+setting+up+your+account.",
+  );
+  const redirectTo = `${getRequestBaseUrl()}/auth/callback?next=${nextPath}`;
+  const { error } = await supabase.auth.resetPasswordForEmail(authUser.user.email, {
+    redirectTo,
+  });
+
+  if (error) {
+    redirect(withMessage(returnPath, error.message));
+  }
+
+  redirect(
+    withMessage(
+      returnPath,
+      "Setup email sent. The member can use it to create or reset their password.",
+    ),
+  );
 }
 
 export async function updateDownloadAction(

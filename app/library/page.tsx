@@ -4,13 +4,12 @@ import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
 import { EmptyState } from "@/components/empty-state";
 import { SetupState } from "@/components/setup-state";
-import { getCurrentProfile, requireUser } from "@/utils/auth";
+import { getCurrentPortalProfile } from "@/utils/auth";
 import { getMemberCourses } from "@/utils/library";
 
 export default async function LibraryPage() {
-  const { user } = await requireUser();
-  const profile = await getCurrentProfile(user.id);
-  const isAdmin = profile?.role === "admin";
+  const { user, profile, isPortalAdmin } = await getCurrentPortalProfile();
+  const isAdmin = isPortalAdmin;
   const { courses, setupRequired } = await getMemberCourses(user.id, isAdmin);
   const singleCourse = courses.length === 1;
 
@@ -18,9 +17,9 @@ export default async function LibraryPage() {
     <AppShell
       title="Your courses"
       eyebrow={profile?.full_name ?? user.email ?? "Member library"}
-      showAdmin={profile?.role === "admin"}
+      showAdmin={isAdmin}
       actions={
-        profile?.role === "admin" ? (
+        isAdmin ? (
           <Link className="button button-secondary" href="/admin/courses">
             Open admin
           </Link>

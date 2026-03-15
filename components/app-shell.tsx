@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getCurrentPortal } from "@/utils/portal";
 
 type AppShellProps = {
   title: React.ReactNode;
@@ -8,19 +9,21 @@ type AppShellProps = {
   children: React.ReactNode;
 };
 
-export function AppShell({
+export async function AppShell({
   title,
   eyebrow,
   actions,
   showAdmin = false,
   children,
 }: AppShellProps) {
+  const portal = await getCurrentPortal();
+
   return (
     <div className="shell">
       <aside className="sidebar">
         <Link className="brand" href="/library">
-          <span className="brand-mark">S</span>
-          <span>Superabound Library</span>
+          <span className="brand-mark">{(portal?.name ?? "Portal").slice(0, 1)}</span>
+          <span>{portal?.name ?? "Portal"} Library</span>
         </Link>
         <nav className="nav">
           <Link href="/library">Library</Link>

@@ -1,4 +1,5 @@
 import { createClient } from "@/utils/supabase/server";
+import { requireCurrentPortal, type PortalRole } from "@/utils/portal";
 
 type QueryError = {
   code?: string;
@@ -8,19 +9,6 @@ type QueryError = {
 type QueryState<T> = {
   data: T | null;
   setupRequired: boolean;
-};
-
-type CourseEnrollmentRow = {
-  course: {
-    id: string;
-    slug: string;
-    title: string;
-    subtitle: string | null;
-    description: string | null;
-    thumbnail_url: string | null;
-    status: "draft" | "published";
-    created_at: string;
-  } | null;
 };
 
 type LessonRow = {
@@ -163,7 +151,7 @@ export type AdminEnrollmentUser = {
   id: string;
   email: string;
   fullName: string | null;
-  role: "admin" | "member";
+  role: PortalRole;
   createdAt: string;
 };
 
@@ -256,11 +244,13 @@ export function getCourseLessonCount(course: CourseDetail) {
 
 export async function getMemberCourses(userId: string, isAdmin = false) {
   const supabase = createClient();
+  const portal = await requireCurrentPortal();
 
   if (isAdmin) {
     const { data, error } = await supabase
       .from("courses")
       .select("id, slug, title, subtitle, description, thumbnail_url, status, created_at")
+      .eq("portal_id", portal.id)
       .order("created_at", { ascending: false });
 
     const state = toQueryState(data as CourseRow[] | null, error);
@@ -281,22 +271,30 @@ export async function getMemberCourses(userId: string, isAdmin = false) {
   }
 
   const { data, error } = await supabase
-    .from("course_enrollments")
+    .from("courses")
     .select(
-      "course:courses!inner(id, slug, title, subtitle, description, thumbnail_url, status, created_at)",
+      `
+        id,
+        slug,
+        title,
+        subtitle,
+        description,
+        thumbnail_url,
+        status,
+        created_at,
+        course_enrollments!inner(user_id, status)
+      `,
     )
-    .eq("user_id", userId)
-    .eq("status", "active")
-    .eq("course.status", "published");
+    .eq("portal_id", portal.id)
+    .eq("status", "published")
+    .eq("course_enrollments.user_id", userId)
+    .eq("course_enrollments.status", "active");
 
-  const state = toQueryState(data as CourseEnrollmentRow[] | null, error);
+  const state = toQueryState(data as CourseRow[] | null, error);
 
   return {
     setupRequired: state.setupRequired,
-    courses: (state.data ?? [])
-      .map((row) => row.course)
-      .filter((course): course is NonNullable<CourseEnrollmentRow["course"]> => Boolean(course))
-      .map((course) => ({
+    courses: (state.data ?? []).map((course) => ({
         id: course.id,
         slug: course.slug,
         title: course.title,
@@ -314,6 +312,8 @@ export async function getAccessibleCourse(
   courseSlug: string,
   isAdmin = false,
 ) {
+  const portal = await requireCurrentPortal();
+
   if (isAdmin) {
     return getAdminCourse(courseSlug);
   }
@@ -351,6 +351,7 @@ export async function getAccessibleCourse(
       `,
     )
     .eq("slug", courseSlug)
+    .eq("portal_id", portal.id)
     .eq("status", "published")
     .eq("course_enrollments.user_id", userId)
     .eq("course_enrollments.status", "active")
@@ -433,6 +434,7 @@ export async function getLessonContent(lessonId: string) {
 
 export async function getAdminLessonEditor(lessonId: string) {
   const supabase = createClient();
+  const portal = await requireCurrentPortal();
   const { data: lessonRow, error: lessonError } = await supabase
     .from("lessons")
     .select("id, title, slug, summary, thumbnail_url, status, module_id")
@@ -461,7 +463,7 @@ export async function getAdminLessonEditor(lessonId: string) {
 
   const { data: moduleRow, error: moduleError } = await supabase
     .from("modules")
-    .select("id, title, course:courses!inner(slug, title)")
+    .select("id, title, course:courses!inner(slug, title, portal_id)")
     .eq("id", lessonState.data.module_id)
     .maybeSingle();
 
@@ -472,6 +474,7 @@ export async function getAdminLessonEditor(lessonId: string) {
       course: {
         slug: string;
         title: string;
+        portal_id: string;
       } | null;
     } | null,
     moduleError,
@@ -479,7 +482,11 @@ export async function getAdminLessonEditor(lessonId: string) {
 
   const contentState = await getLessonContent(lessonId);
 
-  if (!moduleState.data?.course || !contentState.lesson) {
+  if (
+    !moduleState.data?.course ||
+    moduleState.data.course.portal_id !== portal.id ||
+    !contentState.lesson
+  ) {
     return {
       setupRequired:
         lessonState.setupRequired || moduleState.setupRequired || contentState.setupRequired,
@@ -504,9 +511,11 @@ export async function getAdminLessonEditor(lessonId: string) {
 
 export async function getAdminCourses() {
   const supabase = createClient();
+  const portal = await requireCurrentPortal();
   const { data, error } = await supabase
     .from("courses")
     .select("id, slug, title, subtitle, description, thumbnail_url, status, created_at")
+    .eq("portal_id", portal.id)
     .order("created_at", { ascending: false });
 
   const state = toQueryState(data as CourseRow[] | null, error);
@@ -528,6 +537,7 @@ export async function getAdminCourses() {
 
 export async function getAdminCourse(courseSlug: string) {
   const supabase = createClient();
+  const portal = await requireCurrentPortal();
   const { data, error } = await supabase
     .from("courses")
     .select(
@@ -559,6 +569,7 @@ export async function getAdminCourse(courseSlug: string) {
       `,
     )
     .eq("slug", courseSlug)
+    .eq("portal_id", portal.id)
     .maybeSingle();
 
   const state = toQueryState(data as CourseRow | null, error);
@@ -576,20 +587,29 @@ export async function getAdminEnrollmentDashboard({
   pageSize = 50,
 }: AdminEnrollmentDashboardOptions = {}) {
   const supabase = createClient();
+  const portal = await requireCurrentPortal();
   const safePage = Number.isFinite(page) && page > 0 ? Math.floor(page) : 1;
   const normalizedQuery = query.trim();
   const rangeFrom = (safePage - 1) * pageSize;
   const rangeTo = rangeFrom + pageSize - 1;
   let profilesQuery = supabase
     .from("profiles")
-    .select("id, email, full_name, role, created_at", { count: "exact" })
+    .select(
+      "id, email, full_name, created_at, portal_memberships!inner(portal_id, role, created_at)",
+      { count: "exact" },
+    )
+    .eq("portal_memberships.portal_id", portal.id)
     .order("created_at", { ascending: false })
     .range(rangeFrom, rangeTo);
 
   if (memberId) {
     profilesQuery = supabase
       .from("profiles")
-      .select("id, email, full_name, role, created_at", { count: "exact" })
+      .select(
+        "id, email, full_name, created_at, portal_memberships!inner(portal_id, role, created_at)",
+        { count: "exact" },
+      )
+      .eq("portal_memberships.portal_id", portal.id)
       .eq("id", memberId)
       .limit(1);
   } else if (normalizedQuery) {
@@ -603,6 +623,7 @@ export async function getAdminEnrollmentDashboard({
     supabase
       .from("courses")
       .select("id, slug, title, status")
+      .eq("portal_id", portal.id)
       .order("title", { ascending: true }),
     profilesQuery,
   ]);
@@ -621,8 +642,14 @@ export async function getAdminEnrollmentDashboard({
       id: string;
       email: string;
       full_name: string | null;
-      role: "admin" | "member";
       created_at: string;
+      portal_memberships:
+        | Array<{
+            portal_id: string;
+            role: PortalRole;
+            created_at: string;
+          }>
+        | null;
     }> | null,
     profilesResponse.error,
   );
@@ -642,16 +669,16 @@ export async function getAdminEnrollmentDashboard({
                 title,
                 status
               ),
-              user:profiles!inner(
-                id,
-                email,
-                full_name,
-                role,
-                created_at
-              )
+      user:profiles!inner(
+        id,
+        email,
+        full_name,
+        created_at
+      )
             `,
           )
           .in("user_id", userIds)
+          .eq("course.portal_id", portal.id)
           .order("created_at", { ascending: false })
       : { data: [], error: null };
   const enrollmentState = toQueryState(
@@ -669,7 +696,6 @@ export async function getAdminEnrollmentDashboard({
         id: string;
         email: string;
         full_name: string | null;
-        role: "admin" | "member";
         created_at: string;
       } | null;
     }> | null,
@@ -695,7 +721,7 @@ export async function getAdminEnrollmentDashboard({
       id: profile.id,
       email: profile.email,
       fullName: profile.full_name,
-      role: profile.role,
+      role: profile.portal_memberships?.[0]?.role ?? "member",
       createdAt: profile.created_at,
     })),
     enrollments: (enrollmentState.data ?? [])
@@ -719,7 +745,9 @@ export async function getAdminEnrollmentDashboard({
           id: enrollment.user.id,
           email: enrollment.user.email,
           fullName: enrollment.user.full_name,
-          role: enrollment.user.role,
+          role:
+            (profileState.data ?? []).find((profile) => profile.id === enrollment.user.id)
+              ?.portal_memberships?.[0]?.role ?? "member",
           createdAt: enrollment.user.created_at,
         },
       })),

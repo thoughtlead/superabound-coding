@@ -1,16 +1,15 @@
 import { AppShell } from "@/components/app-shell";
-import { getCurrentProfile, requireUser } from "@/utils/auth";
+import { getCurrentPortalProfile } from "@/utils/auth";
 import { EmailForm } from "@/app/account/email/email-form";
 
 export default async function AccountEmailPage() {
-  const { user } = await requireUser();
-  const profile = await getCurrentProfile(user.id);
+  const { user, isPortalAdmin } = await getCurrentPortalProfile();
 
   return (
     <AppShell
       title="Change email"
       eyebrow="Account security"
-      showAdmin={profile?.role === "admin"}
+      showAdmin={isPortalAdmin}
     >
       <section className="panel lesson-panel">
         <p className="form-note">

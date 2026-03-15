@@ -1,6 +1,7 @@
 import {
   createEnrollmentAction,
   inviteMemberAction,
+  sendMemberSetupEmailAction,
   updateEnrollmentStatusAction,
   updateUserNameAction,
 } from "@/app/admin/actions";
@@ -165,6 +166,7 @@ export default async function AdminEnrollmentsPage({
               enrollments: [],
             };
             const updateUserName = updateUserNameAction.bind(null, group.user.id);
+            const sendSetupEmail = sendMemberSetupEmailAction.bind(null, group.user.id);
 
             return (
               <article key={group.user.id} className="panel lesson-panel member-admin-card">
@@ -197,6 +199,18 @@ export default async function AdminEnrollmentsPage({
                         </button>
                       </div>
                     </div>
+                  </form>
+                </div>
+                <div className="inline-actions member-admin-tools">
+                  <form action={sendSetupEmail}>
+                    <input
+                      name="returnTo"
+                      type="hidden"
+                      value={`/admin/enrollments?memberId=${group.user.id}`}
+                    />
+                    <button className="button button-secondary" type="submit">
+                      Send setup email
+                    </button>
                   </form>
                 </div>
                 <div className="member-course-list">

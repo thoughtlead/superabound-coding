@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { MediaBlock } from "@/components/media-block";
 import { SetupState } from "@/components/setup-state";
-import { getCurrentProfile, requireUser } from "@/utils/auth";
+import { getCurrentPortalProfile } from "@/utils/auth";
 import { getAccessibleCourse, getLessonContent } from "@/utils/library";
 
 type LessonPageProps = {
@@ -16,12 +16,11 @@ type LessonPageProps = {
 };
 
 export default async function LessonPage({ params }: LessonPageProps) {
-  const { user } = await requireUser();
-  const profile = await getCurrentProfile(user.id);
+  const { user, isPortalAdmin } = await getCurrentPortalProfile();
   const courseState = await getAccessibleCourse(
     user.id,
     params.courseSlug,
-    profile?.role === "admin",
+    isPortalAdmin,
   );
 
   if (courseState.setupRequired) {

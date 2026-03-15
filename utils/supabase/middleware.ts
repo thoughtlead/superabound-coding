@@ -1,5 +1,6 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { getPortalSlugFromHost } from "@/utils/portal";
 
 type CookieToSet = {
   name: string;
@@ -7,9 +8,19 @@ type CookieToSet = {
   options: CookieOptions;
 };
 
+function createPortalHeaders(request: NextRequest) {
+  const requestHeaders = new Headers(request.headers);
+  const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host");
+  requestHeaders.set("x-portal-slug", getPortalSlugFromHost(host));
+  return requestHeaders;
+}
+
 export async function updateSession(request: NextRequest) {
+  const requestHeaders = createPortalHeaders(request);
   let response = NextResponse.next({
-    request,
+    request: {
+      headers: requestHeaders,
+    },
   });
 
   const supabase = createServerClient(
@@ -26,7 +37,9 @@ export async function updateSession(request: NextRequest) {
           });
 
           response = NextResponse.next({
-            request,
+            request: {
+              headers: requestHeaders,
+            },
           });
 
           cookiesToSet.forEach(({ name, value, options }) => {
@@ -43,7 +56,10 @@ export async function updateSession(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
   const isProtectedRoute =
-    pathname.startsWith("/library") || pathname.startsWith("/account");
+    pathname.startsWith("/library") ||
+    pathname.startsWith("/account") ||
+    pathname.startsWith("/admin") ||
+    pathname === "/create-account";
   const isLoginRoute = pathname === "/login";
 
   if (!user && isProtectedRoute) {

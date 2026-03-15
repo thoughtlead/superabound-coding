@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { logoutAction, updateOwnNameAction } from "@/app/account/actions";
 import { AppShell } from "@/components/app-shell";
-import { getCurrentProfile, requireUser } from "@/utils/auth";
+import { getCurrentPortalProfile } from "@/utils/auth";
 import { getMemberCourses } from "@/utils/library";
+import { isPortalAdminRole } from "@/utils/portal";
 
 type AccountPageProps = {
   searchParams?: {
@@ -11,17 +12,17 @@ type AccountPageProps = {
 };
 
 export default async function AccountPage({ searchParams }: AccountPageProps) {
-  const { user } = await requireUser();
-  const profile = await getCurrentProfile(user.id);
-  const { courses, setupRequired } = await getMemberCourses(user.id);
+  const { user, profile, membership } = await getCurrentPortalProfile();
+  const isPortalAdmin = isPortalAdminRole(membership.role);
+  const { courses, setupRequired } = await getMemberCourses(user.id, isPortalAdmin);
 
   return (
     <AppShell
       title="Account"
       eyebrow="Profile"
-      showAdmin={profile?.role === "admin"}
+      showAdmin={isPortalAdmin}
       actions={
-        profile?.role === "admin" ? (
+        isPortalAdmin ? (
           <Link className="button button-secondary" href="/admin/courses">
             Admin courses
           </Link>
@@ -37,7 +38,7 @@ export default async function AccountPage({ searchParams }: AccountPageProps) {
         <div className="meta-grid">
           <div>
             <span className="meta-label">Role</span>
-            <strong>{profile?.role ?? "member"}</strong>
+            <strong>{membership.role}</strong>
           </div>
           <div>
             <span className="meta-label">Courses</span>

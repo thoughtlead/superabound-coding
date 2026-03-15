@@ -1,5 +1,6 @@
 import { type EmailOtpType } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
+import { getBaseUrlFromRequest } from "@/utils/portal";
 import { createRouteHandlerClient } from "@/utils/supabase/route-handler";
 
 async function syncCurrentProfileEmail(
@@ -17,12 +18,18 @@ async function syncCurrentProfileEmail(
 }
 
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
+  const { searchParams } = new URL(request.url);
+  const origin = getBaseUrlFromRequest(request);
   const tokenHash = searchParams.get("token_hash");
   const type = searchParams.get("type") as EmailOtpType | null;
   const code = searchParams.get("code");
+  const requestedNext = searchParams.get("next");
   const next =
-    searchParams.get("next") ?? (type === "invite" ? "/create-account" : "/library");
+    requestedNext && requestedNext.startsWith("/")
+      ? requestedNext
+      : type === "invite"
+        ? "/create-account"
+        : "/library";
 
   if (tokenHash && type) {
     const response = NextResponse.redirect(`${origin}${next}`);

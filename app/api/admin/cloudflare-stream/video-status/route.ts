@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getPortalSlugFromHost } from "@/utils/portal";
 import { createRouteHandlerClient } from "@/utils/supabase/route-handler";
 
 type CloudflareVideoStatusResponse = {
@@ -21,7 +22,7 @@ type CloudflareVideoStatusResponse = {
   }>;
 };
 
-async function requireAdmin() {
+async function requireAdmin(request: Request) {
   const response = NextResponse.json({});
   const supabase = createRouteHandlerClient(response);
   const {
@@ -32,13 +33,25 @@ async function requireAdmin() {
     return { error: NextResponse.json({ error: "Unauthorized." }, { status: 401 }) };
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
+  const portalSlug = getPortalSlugFromHost(request.headers.get("x-forwarded-host") ?? request.headers.get("host"));
+  const { data: portal } = await supabase
+    .from("portals")
+    .select("id")
+    .eq("slug", portalSlug)
     .maybeSingle();
 
-  if (profile?.role !== "admin") {
+  if (!portal) {
+    return { error: NextResponse.json({ error: "Portal not found." }, { status: 404 }) };
+  }
+
+  const { data: membership } = await supabase
+    .from("portal_memberships")
+    .select("role")
+    .eq("portal_id", portal.id)
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (!membership || (membership.role !== "owner" && membership.role !== "admin")) {
     return { error: NextResponse.json({ error: "Forbidden." }, { status: 403 }) };
   }
 
@@ -56,7 +69,7 @@ export async function GET(request: Request) {
     );
   }
 
-  const adminState = await requireAdmin();
+  const adminState = await requireAdmin(request);
 
   if ("error" in adminState) {
     return adminState.error;

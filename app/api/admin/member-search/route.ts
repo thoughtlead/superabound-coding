@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getPortalSlugFromHost } from "@/utils/portal";
 import { createRouteHandlerClient } from "@/utils/supabase/route-handler";
 
 export async function GET(request: Request) {
@@ -14,13 +15,25 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
+  const portalSlug = getPortalSlugFromHost(request.headers.get("x-forwarded-host") ?? request.headers.get("host"));
+  const { data: portal } = await supabase
+    .from("portals")
+    .select("id")
+    .eq("slug", portalSlug)
     .maybeSingle();
 
-  if (profile?.role !== "admin") {
+  if (!portal) {
+    return NextResponse.json({ error: "Portal not found" }, { status: 404 });
+  }
+
+  const { data: membership } = await supabase
+    .from("portal_memberships")
+    .select("role")
+    .eq("portal_id", portal.id)
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (!membership || (membership.role !== "owner" && membership.role !== "admin")) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -31,7 +44,8 @@ export async function GET(request: Request) {
   const escapedQuery = query.replace(/[%_,]/g, "\\$&");
   const { data, error } = await supabase
     .from("profiles")
-    .select("id, email, full_name")
+    .select("id, email, full_name, portal_memberships!inner(portal_id)")
+    .eq("portal_memberships.portal_id", portal.id)
     .or(`full_name.ilike.%${escapedQuery}%,email.ilike.%${escapedQuery}%`)
     .order("created_at", { ascending: false })
     .limit(8);

@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
+import { ForgotPasswordForm } from "@/app/forgot-password/forgot-password-form";
 import { createClient } from "@/utils/supabase/server";
 
 type ForgotPasswordPageProps = {
@@ -26,18 +26,7 @@ export default async function ForgotPasswordPage({
         <p className="eyebrow">Superabound</p>
         <h1>Reset password</h1>
         <p>Request a reset link for your account.</p>
-        <form action="/auth/forgot-password" method="post">
-          <label htmlFor="email">Email</label>
-          <input id="email" name="email" type="email" autoComplete="email" required />
-
-          <button type="submit">Send reset link</button>
-          <p className="form-note">
-            Return to <Link href="/login">sign in</Link>.
-          </p>
-          {searchParams?.message ? (
-            <p className="form-status">{searchParams.message}</p>
-          ) : null}
-        </form>
+        <ForgotPasswordForm message={searchParams?.message} />
       </main>
     </div>
   );

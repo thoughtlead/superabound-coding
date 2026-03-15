@@ -1,6 +1,6 @@
 import { AppShell } from "@/components/app-shell";
 import { PasswordForm } from "@/app/account/password/password-form";
-import { getCurrentProfile, requireUser } from "@/utils/auth";
+import { getCurrentPortalProfile } from "@/utils/auth";
 
 type CreateAccountPageProps = {
   searchParams?: {
@@ -11,19 +11,18 @@ type CreateAccountPageProps = {
 export default async function CreateAccountPage({
   searchParams,
 }: CreateAccountPageProps) {
-  const { user } = await requireUser();
-  const profile = await getCurrentProfile(user.id);
+  const { isPortalAdmin } = await getCurrentPortalProfile();
 
   return (
     <AppShell
       title="Create your account"
       eyebrow="Welcome"
-      showAdmin={profile?.role === "admin"}
+      showAdmin={isPortalAdmin}
     >
       <section className="panel lesson-panel">
         {searchParams?.message ? <p className="form-status">{searchParams.message}</p> : null}
         <p className="form-note">
-          Set your password to finish activating your invited Superabound Library account.
+          Set your password to finish activating your invited portal account.
         </p>
         <PasswordForm submitLabel="Create password" successRedirect="/library" />
       </section>
