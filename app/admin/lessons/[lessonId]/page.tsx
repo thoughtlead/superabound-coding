@@ -5,6 +5,7 @@ import {
   createDownloadAction,
   deleteBlockAction,
   deleteDownloadAction,
+  deleteLessonAction,
   updateBlockAction,
   updateDownloadAction,
   updateLessonAction,
@@ -13,9 +14,11 @@ import { AddContentBlockSection } from "@/components/add-content-block-section";
 import { AddLessonDownloadSection } from "@/components/add-lesson-download-section";
 import { AppShell } from "@/components/app-shell";
 import { BlockEditorForm } from "@/components/block-editor-form";
+import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
 import { DownloadEditorForm } from "@/components/download-editor-form";
 import { SetupState } from "@/components/setup-state";
 import { StorageUploadField } from "@/components/storage-upload-field";
+import { TrashIcon } from "@/components/trash-icon";
 import { requireAdmin } from "@/utils/auth";
 import { getAdminLessonEditor } from "@/utils/library";
 
@@ -52,6 +55,7 @@ export default async function AdminLessonPage({
   const updateLesson = updateLessonAction.bind(null, lesson.id, lesson.courseSlug);
   const createBlock = createBlockAction.bind(null, lesson.id);
   const createDownload = createDownloadAction.bind(null, lesson.id);
+  const deleteLesson = deleteLessonAction.bind(null, lesson.courseSlug, lesson.id);
   const refreshKey = searchParams?._r ?? "initial";
 
   return (
@@ -221,6 +225,25 @@ export default async function AdminLessonPage({
             initialPosition={lesson.downloads.length}
             refreshKey={refreshKey}
           />
+        </div>
+      </section>
+
+      <section className="panel lesson-panel lesson-danger-panel">
+        <div className="stack stack-tight">
+          <p className="eyebrow">Danger zone</p>
+          <h2>Delete lesson</h2>
+          <p>Delete this lesson and permanently remove its content blocks and downloads.</p>
+        </div>
+        <div className="panel-actions">
+          <form action={deleteLesson}>
+            <ConfirmSubmitButton
+              className="button button-danger"
+              confirmMessage={`Delete the lesson "${lesson.title}"? This will remove its content blocks and downloads.`}
+            >
+              <TrashIcon />
+              Delete lesson
+            </ConfirmSubmitButton>
+          </form>
         </div>
       </section>
     </AppShell>

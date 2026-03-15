@@ -141,6 +141,25 @@ button:disabled,
   border-color: rgba(37, 33, 31, 0.22);
 }
 
+.button-danger {
+  background: #fff4f2;
+  border-color: rgba(191, 67, 43, 0.22);
+  color: #b33a22;
+  box-shadow: none;
+}
+
+.button-danger:hover {
+  background: #ffede8;
+  border-color: rgba(179, 58, 34, 0.34);
+  box-shadow: none;
+}
+
+.button-icon-only {
+  min-width: 44px;
+  width: 44px;
+  padding: 0;
+}
+
 img {
   display: block;
   max-width: 100%;
@@ -811,6 +830,22 @@ form {
 .download-editor:last-child {
   padding-bottom: 0;
   border-bottom: 0;
+}
+
+.download-create-shell {
+  gap: 16px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(29, 27, 25, 0.08);
+}
+
+.download-create-shell h3 {
+  font-size: 1.15rem;
+  line-height: 1.2;
+}
+
+.lesson-danger-panel {
+  display: grid;
+  gap: 18px;
 }
 
 .upload-field {

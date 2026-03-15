@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import {
   createLessonAction,
   createModuleAction,
+  deleteLessonAction,
   moveLessonDownAction,
   moveLessonUpAction,
   moveModuleDownAction,
@@ -11,8 +12,10 @@ import {
   updateModuleAction,
 } from "@/app/admin/actions";
 import { AppShell } from "@/components/app-shell";
+import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
 import { SetupState } from "@/components/setup-state";
 import { StorageUploadField } from "@/components/storage-upload-field";
+import { TrashIcon } from "@/components/trash-icon";
 import { requireAdmin } from "@/utils/auth";
 import { getAdminCourse, getCourseLessonCount } from "@/utils/library";
 
@@ -168,9 +171,6 @@ export default async function AdminCoursePage({
               <p className="eyebrow">Course outline</p>
               <h2>Modules and lessons</h2>
             </div>
-            <p>
-              Keep modules together here, then add and reorder lessons inside each module.
-            </p>
           </div>
           {course.modules.map((moduleItem) => {
             const updateModule = updateModuleAction.bind(null, course.slug, moduleItem.id);
@@ -241,6 +241,7 @@ export default async function AdminCoursePage({
                   {moduleItem.lessons.map((lesson, index) => {
                     const moveLessonUp = moveLessonUpAction.bind(null, course.slug, lesson.id);
                     const moveLessonDown = moveLessonDownAction.bind(null, course.slug, lesson.id);
+                    const deleteLesson = deleteLessonAction.bind(null, course.slug, lesson.id);
 
                     return (
                       <div key={lesson.id} className="lesson-row lesson-row-admin">
@@ -265,6 +266,16 @@ export default async function AdminCoursePage({
                           <Link className="button button-secondary" href={`/admin/lessons/${lesson.id}`}>
                             Edit lesson
                           </Link>
+                          <form action={deleteLesson}>
+                            <ConfirmSubmitButton
+                              ariaLabel={`Delete ${lesson.title}`}
+                              className="button button-danger button-icon-only"
+                              confirmMessage={`Delete the lesson "${lesson.title}"? This will remove its content blocks and downloads.`}
+                              title="Delete lesson"
+                            >
+                              <TrashIcon />
+                            </ConfirmSubmitButton>
+                          </form>
                         </div>
                       </div>
                     );

@@ -18,27 +18,20 @@ export function AddLessonDownloadSection({
 
   if (!open) {
     return (
-      <div className="row-spread section-header">
-        <div className="stack stack-tight">
-          <p className="eyebrow">Downloads</p>
-          <h2>Add lesson download</h2>
-          <p>Attach worksheets, PDFs, or supporting files that members can open or download.</p>
-        </div>
-        <div className="panel-actions">
-          <button onClick={() => setOpen(true)} type="button">
-            Add lesson download
-          </button>
-        </div>
+      <div className="panel-actions">
+        <button onClick={() => setOpen(true)} type="button">
+          Add lesson download
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="stack">
-      <div className="row-spread section-header">
+    <div className="stack download-create-shell">
+      <div className="row-spread">
         <div className="stack stack-tight">
-          <p className="eyebrow">Downloads</p>
-          <h2>Add lesson download</h2>
+          <h3>New lesson download</h3>
+          <p>Attach a worksheet, PDF, or supporting file members can open or download.</p>
         </div>
         <button className="button button-secondary" onClick={() => setOpen(false)} type="button">
           Cancel

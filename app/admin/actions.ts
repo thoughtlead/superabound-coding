@@ -350,6 +350,39 @@ export async function moveLessonDownAction(courseSlug: string, lessonId: string)
   await swapLessonPosition(courseSlug, lessonId, "down");
 }
 
+export async function deleteLessonAction(courseSlug: string, lessonId: string) {
+  const { supabase } = await requireAdmin();
+
+  const { error: blocksError } = await supabase
+    .from("lesson_blocks")
+    .delete()
+    .eq("lesson_id", lessonId);
+
+  if (blocksError) {
+    redirect(withMessage(`/admin/courses/${courseSlug}`, blocksError.message));
+  }
+
+  const { error: downloadsError } = await supabase
+    .from("lesson_downloads")
+    .delete()
+    .eq("lesson_id", lessonId);
+
+  if (downloadsError) {
+    redirect(withMessage(`/admin/courses/${courseSlug}`, downloadsError.message));
+  }
+
+  const { error: lessonError } = await supabase.from("lessons").delete().eq("id", lessonId);
+
+  if (lessonError) {
+    redirect(withMessage(`/admin/courses/${courseSlug}`, lessonError.message));
+  }
+
+  revalidatePath(`/admin/courses/${courseSlug}`);
+  revalidatePath(`/admin/lessons/${lessonId}`);
+  revalidatePath("/library");
+  redirect(withMessage(`/admin/courses/${courseSlug}`, "Lesson deleted."));
+}
+
 export async function updateLessonAction(
   lessonId: string,
   courseSlug: string,
