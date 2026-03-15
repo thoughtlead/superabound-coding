@@ -358,6 +358,38 @@ form {
   max-width: 720px;
 }
 
+.lesson-content-section {
+  display: grid;
+  gap: 22px;
+}
+
+.lesson-content-header {
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(29, 27, 25, 0.08);
+}
+
+.lesson-content-stack {
+  gap: 16px;
+}
+
+.lesson-content-card {
+  display: grid;
+  gap: 18px;
+  padding: 22px;
+  border: 1px solid rgba(29, 27, 25, 0.08);
+  border-radius: 20px;
+  background: rgba(247, 247, 250, 0.58);
+}
+
+.lesson-content-card-head {
+  margin-bottom: 2px;
+}
+
+.lesson-content-card h3 {
+  font-size: 1.3rem;
+  line-height: 1.15;
+}
+
 .course-grid {
   display: grid;
   gap: 18px;

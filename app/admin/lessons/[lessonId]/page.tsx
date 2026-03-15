@@ -129,51 +129,55 @@ export default async function AdminLessonPage({
         </form>
       </section>
 
-      <section className="stack stack-tight">
-        <div className="section-header">
+      <section className="panel lesson-panel lesson-content-section">
+        <div className="section-header lesson-content-header">
           <p className="eyebrow">Lesson content</p>
           <h2>Content blocks</h2>
-          <p>Edit the pieces of this lesson in the order they should appear to members.</p>
+          <p>Edit and order the pieces of this lesson exactly as members should experience them.</p>
         </div>
-        {lesson.blocks.map((block) => {
-          const updateBlock = updateBlockAction.bind(null, lesson.id, block.id);
-          const deleteBlock = deleteBlockAction.bind(null, lesson.id, block.id);
-          const showBlockSaved = searchParams?.blockUpdated === block.id;
+        <div className="stack lesson-content-stack">
+          {lesson.blocks.map((block, index) => {
+            const updateBlock = updateBlockAction.bind(null, lesson.id, block.id);
+            const deleteBlock = deleteBlockAction.bind(null, lesson.id, block.id);
+            const showBlockSaved = searchParams?.blockUpdated === block.id;
 
-          return (
-            <section key={block.id} className="panel lesson-panel">
-              <div className="row-spread">
-                <h2>Content block</h2>
-                <span className="pill">{block.type}</span>
-              </div>
-              <BlockEditorForm
-                action={updateBlock}
-                initialBody={block.body}
-                initialEmbedUrl={block.embedUrl}
-                initialMediaProvider={block.mediaProvider}
-                initialMediaUrl={block.mediaUrl}
-                initialPosition={block.position}
-                initialTitle={block.title}
-                initialType={block.type}
-                prefix={`block-${block.id}`}
-                statusMessage={showBlockSaved ? "Block saved" : undefined}
-                secondaryActions={
-                  <button className="button button-secondary" formAction={deleteBlock} type="submit">
-                    Delete block
-                  </button>
-                }
-                submitLabel="Save block"
-              />
-            </section>
-          );
-        })}
+            return (
+              <section key={block.id} className="lesson-content-card">
+                <div className="row-spread lesson-content-card-head">
+                  <div className="stack stack-tight">
+                    <p className="eyebrow">Block {index + 1}</p>
+                    <h3>Content block</h3>
+                  </div>
+                  <span className="pill">{block.type}</span>
+                </div>
+                <BlockEditorForm
+                  action={updateBlock}
+                  initialBody={block.body}
+                  initialEmbedUrl={block.embedUrl}
+                  initialMediaProvider={block.mediaProvider}
+                  initialMediaUrl={block.mediaUrl}
+                  initialPosition={block.position}
+                  initialTitle={block.title}
+                  initialType={block.type}
+                  prefix={`block-${block.id}`}
+                  statusMessage={showBlockSaved ? "Block saved" : undefined}
+                  secondaryActions={
+                    <button className="button button-secondary" formAction={deleteBlock} type="submit">
+                      Delete block
+                    </button>
+                  }
+                  submitLabel="Save block"
+                />
+              </section>
+            );
+          })}
+          <AddContentBlockSection
+            action={createBlock}
+            initialPosition={lesson.blocks.length}
+            refreshKey={refreshKey}
+          />
+        </div>
       </section>
-
-      <AddContentBlockSection
-        action={createBlock}
-        initialPosition={lesson.blocks.length}
-        refreshKey={refreshKey}
-      />
 
       <section className="panel lesson-panel">
         <div className="stack">
