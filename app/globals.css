@@ -364,6 +364,10 @@ form {
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 }
 
+.course-grid-single {
+  grid-template-columns: minmax(0, 860px);
+}
+
 .course-card {
   display: grid;
   gap: 16px;
@@ -373,6 +377,13 @@ form {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(247, 247, 250, 0.96));
   box-shadow: var(--shadow);
   transition: transform 160ms ease, border-color 160ms ease;
+}
+
+.course-card-feature {
+  grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+  gap: 22px;
+  align-items: stretch;
+  padding: 22px;
 }
 
 .course-card:hover,
@@ -387,6 +398,12 @@ form {
   overflow: hidden;
   border-radius: 18px;
   background: var(--panel-strong);
+}
+
+.course-card-feature .course-art {
+  aspect-ratio: auto;
+  min-height: 224px;
+  height: 100%;
 }
 
 .course-art img,
@@ -409,6 +426,12 @@ form {
 .course-copy {
   display: grid;
   gap: 10px;
+}
+
+.course-card-feature .course-copy {
+  align-content: start;
+  gap: 12px;
+  padding: 4px 2px 4px 0;
 }
 
 .course-copy h2,
@@ -896,20 +919,20 @@ form {
 }
 
 .member-search-shell {
-  position: relative;
+  display: grid;
+  gap: 12px;
 }
 
 .member-search-results {
-  position: absolute;
-  z-index: 20;
-  top: calc(100% + 10px);
-  left: 0;
-  width: min(100%, 720px);
+  width: 100%;
+  max-width: 720px;
+  max-height: 320px;
   border: 1px solid rgba(29, 27, 25, 0.08);
   border-radius: 18px;
   background: #fff;
   box-shadow: var(--shadow);
   overflow: hidden;
+  overflow-y: auto;
 }
 
 .member-search-result {
@@ -1011,6 +1034,15 @@ form {
 @media (max-width: 1080px) {
   .course-editor-top {
     grid-template-columns: 1fr;
+  }
+
+  .course-card-feature {
+    grid-template-columns: 1fr;
+  }
+
+  .course-card-feature .course-art {
+    aspect-ratio: 16 / 9;
+    min-height: 0;
   }
 
   .course-outline-header {

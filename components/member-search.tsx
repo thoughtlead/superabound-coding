@@ -81,7 +81,6 @@ export function MemberSearch() {
           type="search"
           value={query}
         />
-        {loading ? <span className="form-note">Searching...</span> : null}
         <button
           className="button button-secondary"
           onClick={() => {
@@ -95,6 +94,7 @@ export function MemberSearch() {
           Clear
         </button>
       </div>
+      {loading ? <p className="form-note">Searching...</p> : null}
       {open ? (
         <div className="member-search-results">
           {results.length > 0 ? (

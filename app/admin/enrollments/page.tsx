@@ -79,7 +79,6 @@ export default async function AdminEnrollmentsPage({
       actions={
         <>
           <span className="stat-chip">{totalUsers} members</span>
-          <span className="stat-chip">{enrollments.length} records on page</span>
         </>
       }
     >

@@ -12,6 +12,7 @@ export default async function LibraryPage() {
   const profile = await getCurrentProfile(user.id);
   const isAdmin = profile?.role === "admin";
   const { courses, setupRequired } = await getMemberCourses(user.id, isAdmin);
+  const singleCourse = courses.length === 1;
 
   return (
     <AppShell
@@ -38,11 +39,11 @@ export default async function LibraryPage() {
         />
       ) : null}
       {!setupRequired ? (
-        <section className="course-grid">
+        <section className={`course-grid${singleCourse ? " course-grid-single" : ""}`}>
           {courses.map((course) => (
             <Link
               key={course.id}
-              className="course-card"
+              className={`course-card${singleCourse ? " course-card-feature" : ""}`}
               href={`/library/${course.slug}`}
             >
               <div className="course-art">
