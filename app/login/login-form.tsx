@@ -21,10 +21,6 @@ export function LoginForm({ message }: LoginFormProps) {
 
       <button type="submit">Sign in</button>
 
-      <p className="form-note">
-        If you previously used magic links, set your password via{" "}
-        <Link href="/forgot-password">password reset</Link>.
-      </p>
       {message ? <p className="form-status">{message}</p> : null}
     </form>
   );
