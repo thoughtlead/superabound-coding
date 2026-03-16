@@ -1868,6 +1868,21 @@ form {
   color: var(--muted);
 }
 
+.form-note-inline {
+  margin-top: -2px;
+}
+
+.text-link {
+  color: #1e63d6;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 600;
+}
+
+.text-link:hover {
+  color: #144eb2;
+}
+
 .form-status {
   display: inline-flex;
   width: fit-content;

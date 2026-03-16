@@ -21,6 +21,14 @@ export function LoginForm({ message }: LoginFormProps) {
 
       <button type="submit">Sign in</button>
 
+      <p className="form-note form-note-inline">
+        Need to set or reset your password?{" "}
+        <Link className="text-link" href="/forgot-password">
+          Reset it here
+        </Link>
+        .
+      </p>
+
       {message ? <p className="form-status">{message}</p> : null}
     </form>
   );
