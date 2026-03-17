@@ -192,6 +192,55 @@ async function rebalanceLessonBlockPositions(
   return null;
 }
 
+async function swapBlockPosition(
+  lessonId: string,
+  blockId: string,
+  direction: "up" | "down",
+) {
+  const { supabase } = await requireAdmin();
+  const { data: block, error: blockError } = await supabase
+    .from("lesson_blocks")
+    .select("id, lesson_id, position")
+    .eq("id", blockId)
+    .maybeSingle();
+
+  if (blockError || !block) {
+    redirect(withMessage(`/admin/lessons/${lessonId}`, "Content block not found."));
+  }
+
+  const adjacentBlockQuery = supabase
+    .from("lesson_blocks")
+    .select("id, position")
+    .eq("lesson_id", block.lesson_id)
+    .order("position", { ascending: direction === "down" });
+
+  const { data: adjacentBlock, error: adjacentError } =
+    direction === "up"
+      ? await adjacentBlockQuery.lt("position", block.position).limit(1).maybeSingle()
+      : await adjacentBlockQuery.gt("position", block.position).limit(1).maybeSingle();
+
+  if (adjacentError) {
+    redirect(withMessage(`/admin/lessons/${lessonId}`, adjacentError.message));
+  }
+
+  if (!adjacentBlock) {
+    redirect(withMessage(`/admin/lessons/${lessonId}`, "Content block is already at the edge."));
+  }
+
+  await supabase.from("lesson_blocks").update({ position: -1 }).eq("id", block.id);
+  await supabase
+    .from("lesson_blocks")
+    .update({ position: block.position })
+    .eq("id", adjacentBlock.id);
+  await supabase
+    .from("lesson_blocks")
+    .update({ position: adjacentBlock.position })
+    .eq("id", block.id);
+
+  revalidatePath(`/admin/lessons/${lessonId}`);
+  redirect(withMessage(`/admin/lessons/${lessonId}`, "Content block order updated."));
+}
+
 export async function createCourseAction(formData: FormData) {
   const { supabase, user, portal } = await requireAdmin();
   const title = getValue(formData, "title");
@@ -587,6 +636,14 @@ export async function deleteBlockAction(lessonId: string, blockId: string) {
 
   revalidatePath(`/admin/lessons/${lessonId}`);
   redirect(withMessage(`/admin/lessons/${lessonId}`, "Content block removed."));
+}
+
+export async function moveBlockUpAction(lessonId: string, blockId: string) {
+  await swapBlockPosition(lessonId, blockId, "up");
+}
+
+export async function moveBlockDownAction(lessonId: string, blockId: string) {
+  await swapBlockPosition(lessonId, blockId, "down");
 }
 
 export async function createDownloadAction(lessonId: string, formData: FormData) {

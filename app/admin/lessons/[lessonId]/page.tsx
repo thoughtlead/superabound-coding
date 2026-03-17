@@ -6,6 +6,8 @@ import {
   deleteBlockAction,
   deleteDownloadAction,
   deleteLessonAction,
+  moveBlockDownAction,
+  moveBlockUpAction,
   updateBlockAction,
   updateDownloadAction,
   updateLessonAction,
@@ -71,12 +73,12 @@ export default async function AdminLessonPage({
             {lesson.courseTitle}
           </Link>
           {" / "}
-          <Link
+          <a
             className="eyebrow-link"
             href={`/admin/courses/${lesson.courseSlug}#module-${lesson.moduleId}`}
           >
             {lesson.moduleTitle}
-          </Link>
+          </a>
         </>
       }
       showAdmin
@@ -136,6 +138,8 @@ export default async function AdminLessonPage({
         <div className="stack lesson-content-stack">
           {lesson.blocks.map((block, index) => {
             const updateBlock = updateBlockAction.bind(null, lesson.id, block.id);
+            const moveBlockUp = moveBlockUpAction.bind(null, lesson.id, block.id);
+            const moveBlockDown = moveBlockDownAction.bind(null, lesson.id, block.id);
             const deleteBlock = deleteBlockAction.bind(null, lesson.id, block.id);
             const showBlockSaved = searchParams?.blockUpdated === block.id;
 
@@ -160,9 +164,25 @@ export default async function AdminLessonPage({
                   prefix={`block-${block.id}`}
                   statusMessage={showBlockSaved ? "Block saved" : undefined}
                   secondaryActions={
-                    <button className="button button-secondary" formAction={deleteBlock} type="submit">
-                      Delete block
-                    </button>
+                    <>
+                      <button
+                        className="button button-secondary"
+                        formAction={moveBlockUp}
+                        type="submit"
+                      >
+                        Move up
+                      </button>
+                      <button
+                        className="button button-secondary"
+                        formAction={moveBlockDown}
+                        type="submit"
+                      >
+                        Move down
+                      </button>
+                      <button className="button button-secondary" formAction={deleteBlock} type="submit">
+                        Delete block
+                      </button>
+                    </>
                   }
                   submitLabel="Save block"
                 />

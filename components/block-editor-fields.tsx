@@ -106,17 +106,8 @@ export function BlockEditorFields({
             ))}
           </select>
         </div>
-        <div>
-          <label htmlFor={`${prefix}-position`}>Position</label>
-          <input
-            defaultValue={initialPosition + 1}
-            id={`${prefix}-position`}
-            min={1}
-            name="position"
-            type="number"
-          />
-        </div>
       </div>
+      <input name="position" readOnly type="hidden" value={initialPosition + 1} />
 
       <div className="field-grid">
         <div>

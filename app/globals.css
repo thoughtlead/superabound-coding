@@ -564,6 +564,7 @@ form {
   border-radius: 20px;
   display: grid;
   gap: 22px;
+  scroll-margin-top: 24px;
   border-color: rgba(29, 27, 25, 0.1);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(247, 247, 250, 0.95));
