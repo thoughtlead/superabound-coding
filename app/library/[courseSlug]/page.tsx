@@ -51,7 +51,11 @@ export default async function CoursePage({ params }: CoursePageProps) {
 
       <section className="stack">
         {course.modules.map((moduleItem) => (
-          <article key={moduleItem.id} className="panel module-card">
+          <article
+            id={`module-${moduleItem.id}`}
+            key={moduleItem.id}
+            className="panel module-card"
+          >
             <div className="module-head">
               <div>
                 <p className="eyebrow">Topic {moduleItem.position + 1}</p>

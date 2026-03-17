@@ -264,7 +264,11 @@ export function CloudflareVideoUploadField({
           Choose video
         </label>
         <span className="file-picker-name">{selectedFileName || "No file selected"}</span>
-        {uploading ? <span className="form-note">Uploading to Cloudflare...</span> : null}
+        {uploading ? (
+          <span className="form-note">
+            Uploading your video. Keep this tab open until the upload completes.
+          </span>
+        ) : null}
         {uploading ? (
           <button className="button button-secondary" onClick={handleCancelUpload} type="button">
             Cancel upload

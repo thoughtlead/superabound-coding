@@ -80,18 +80,21 @@ export default async function AdminCoursesPage({
               className="panel admin-course-row"
               href={`/admin/courses/${course.slug}`}
             >
-              <div>
+              <div className="admin-course-row-copy">
                 <p className="eyebrow">Course</p>
                 <h2>{course.title}</h2>
                 {course.subtitle ? <p>{course.subtitle}</p> : null}
               </div>
-              <span
-                className={`pill status-pill ${
-                  course.status === "published" ? "status-pill-published" : "status-pill-draft"
-                }`}
-              >
-                {course.status}
-              </span>
+              <div className="admin-course-row-actions">
+                <span
+                  className={`pill status-pill ${
+                    course.status === "published" ? "status-pill-published" : "status-pill-draft"
+                  }`}
+                >
+                  {course.status}
+                </span>
+                <span className="row-link">Edit course</span>
+              </div>
             </Link>
           ))}
         </section>

@@ -83,12 +83,27 @@ export default async function LessonPage({ params }: LessonPageProps) {
 
   return (
     <AppShell
-      title={
-        <Link className="page-title-link" href={`/library/${course.slug}`}>
-          {course.title}
-        </Link>
+      title={lesson.title}
+      eyebrow={
+        <>
+          <Link className="eyebrow-link" href={`/library/${course.slug}`}>
+            {course.title}
+          </Link>
+          {" / "}
+          {activeModule ? (
+            <Link
+              className="eyebrow-link"
+              href={`/library/${course.slug}#module-${activeModule.id}`}
+            >
+              {activeModule.title}
+            </Link>
+          ) : (
+            <span>{activeLesson.moduleTitle}</span>
+          )}
+          {" / "}
+          <span>{lesson.title}</span>
+        </>
       }
-      eyebrow={`${course.title} / ${activeLesson.moduleTitle}`}
       actions={
         <Link className="button button-secondary" href={`/library/${course.slug}`}>
           Course outline

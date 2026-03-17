@@ -428,7 +428,7 @@ form {
 .course-grid {
   display: grid;
   gap: 18px;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .course-grid-single {
@@ -596,6 +596,18 @@ form {
   transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
 }
 
+.admin-course-row-copy {
+  min-width: 0;
+}
+
+.admin-course-row-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .lesson-row > div,
 .download-row > span:first-child {
   display: flex;
@@ -629,7 +641,7 @@ form {
 .lesson-layout {
   display: grid;
   gap: 24px;
-  grid-template-columns: minmax(0, 1fr) 280px;
+  grid-template-columns: minmax(0, 1fr) 248px;
   align-items: start;
 }
 
@@ -671,7 +683,7 @@ form {
   grid-template-columns: 34px minmax(0, 1fr);
   gap: 12px;
   align-items: start;
-  padding: 12px 14px;
+  padding: 10px 12px;
   border: 1px solid rgba(29, 27, 25, 0.08);
   border-radius: 16px;
   background: rgba(247, 247, 250, 0.72);
@@ -693,12 +705,12 @@ form {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 34px;
-  height: 34px;
-  border-radius: 12px;
+  min-width: 30px;
+  height: 30px;
+  border-radius: 10px;
   background: #fff;
   color: var(--text);
-  font-size: 0.9rem;
+  font-size: 0.82rem;
   font-weight: 700;
 }
 
@@ -708,14 +720,14 @@ form {
 }
 
 .sidebar-lesson-copy strong {
-  font-size: 0.96rem;
-  line-height: 1.25;
+  font-size: 0.9rem;
+  line-height: 1.22;
 }
 
 .sidebar-lesson-copy span {
   color: var(--muted);
-  font-size: 0.9rem;
-  line-height: 1.45;
+  font-size: 0.84rem;
+  line-height: 1.35;
 }
 
 .sidebar-nav-block {
@@ -1399,6 +1411,10 @@ form {
   .lesson-layout {
     grid-template-columns: 1fr;
   }
+
+  .course-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 640px) {
@@ -1408,6 +1424,10 @@ form {
   }
 
   .nav {
+    grid-template-columns: 1fr;
+  }
+
+  .course-grid {
     grid-template-columns: 1fr;
   }
 
