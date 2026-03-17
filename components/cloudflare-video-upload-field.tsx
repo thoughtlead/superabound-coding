@@ -31,6 +31,9 @@ type CloudflareVideoStatus = {
 };
 
 const STATUS_POLL_INTERVAL_MS = 5000;
+const UPLOAD_CHUNK_SIZE_BYTES = 8 * 1024 * 1024;
+const UPLOAD_RETRY_DELAYS_MS = [0, 1_000, 3_000, 5_000, 10_000, 20_000, 30_000, 60_000];
+const UPLOAD_METADATA_STORAGE_KEY = "cloudflare-stream-upload-metadata";
 
 function formatProcessingMessage(status: CloudflareVideoStatus) {
   if (status.readyToStream) {
@@ -51,6 +54,65 @@ function formatProcessingMessage(status: CloudflareVideoStatus) {
   }
 
   return `Upload complete. Cloudflare is processing the video${progress}.`;
+}
+
+function readStoredUploadMetadata() {
+  if (typeof window === "undefined") {
+    return {};
+  }
+
+  try {
+    return JSON.parse(window.localStorage.getItem(UPLOAD_METADATA_STORAGE_KEY) ?? "{}") as Record<
+      string,
+      UploadedVideoValues
+    >;
+  } catch {
+    return {};
+  }
+}
+
+function storeUploadMetadata(uploadUrl: string, values: UploadedVideoValues) {
+  if (typeof window === "undefined" || !uploadUrl) {
+    return;
+  }
+
+  const nextValue = {
+    ...readStoredUploadMetadata(),
+    [uploadUrl]: values,
+  };
+
+  window.localStorage.setItem(UPLOAD_METADATA_STORAGE_KEY, JSON.stringify(nextValue));
+}
+
+function getStoredUploadMetadata(uploadUrl: string | null | undefined) {
+  if (!uploadUrl) {
+    return null;
+  }
+
+  return readStoredUploadMetadata()[uploadUrl] ?? null;
+}
+
+function getUploadedVideoValuesFromUploadUrl(uploadUrl: string | null | undefined) {
+  if (!uploadUrl) {
+    return null;
+  }
+
+  try {
+    const url = new URL(uploadUrl);
+    const mediaId = url.pathname.split("/").filter(Boolean).pop();
+
+    if (!mediaId) {
+      return null;
+    }
+
+    return {
+      embedUrl: "",
+      mediaProvider: "cloudflare-stream",
+      mediaUrl: mediaId,
+    } satisfies UploadedVideoValues;
+  } catch {
+    return null;
+  }
 }
 
 export function CloudflareVideoUploadField({
@@ -127,8 +189,8 @@ export function CloudflareVideoUploadField({
 
     const upload = new tus.Upload(file, {
       endpoint: "/api/admin/cloudflare-stream/direct-upload",
-      chunkSize: 50 * 1024 * 1024,
-      retryDelays: [0, 1_000, 3_000, 5_000, 10_000],
+      chunkSize: UPLOAD_CHUNK_SIZE_BYTES,
+      retryDelays: UPLOAD_RETRY_DELAYS_MS,
       removeFingerprintOnSuccess: true,
       metadata: {
         filename: file.name,
@@ -145,14 +207,21 @@ export function CloudflareVideoUploadField({
 
         const mediaId = response.getHeader("stream-media-id");
         const embedUrl = response.getHeader("x-cloudflare-embed-url");
+        const uploadUrl = response.getHeader("Location");
 
         if (typeof mediaId === "string" && mediaId.length > 0) {
-          uploadedVideoRef.current = {
+          const uploadedVideo = {
             embedUrl:
               typeof embedUrl === "string" ? embedUrl : "",
             mediaProvider: "cloudflare-stream",
             mediaUrl: mediaId,
           };
+
+          uploadedVideoRef.current = uploadedVideo;
+
+          if (typeof uploadUrl === "string" && uploadUrl.length > 0) {
+            storeUploadMetadata(uploadUrl, uploadedVideo);
+          }
         }
       },
       onError(error) {
@@ -209,6 +278,14 @@ export function CloudflareVideoUploadField({
       const previousUploads = await upload.findPreviousUploads();
 
       if (previousUploads.length > 0) {
+        const resumedUploadValues =
+          getStoredUploadMetadata(previousUploads[0].uploadUrl) ??
+          getUploadedVideoValuesFromUploadUrl(previousUploads[0].uploadUrl);
+
+        if (resumedUploadValues) {
+          uploadedVideoRef.current = resumedUploadValues;
+        }
+
         upload.resumeFromPreviousUpload(previousUploads[0]);
       }
 
