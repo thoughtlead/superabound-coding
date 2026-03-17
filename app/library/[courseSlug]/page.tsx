@@ -39,13 +39,17 @@ export default async function CoursePage({ params }: CoursePageProps) {
       eyebrow="Course"
       actions={<span className="stat-chip">{getCourseLessonCount(course)} lessons</span>}
     >
-      <section className="hero panel">
-        <div className="hero-copy">
-          {course.subtitle ? <p className="lede">{course.subtitle}</p> : null}
-          {course.description ? <p>{course.description}</p> : null}
-        </div>
+      <section className={`hero-shell${course.thumbnailUrl ? "" : " hero-shell-text-only"}`}>
+        <section className="hero panel hero-copy-panel">
+          <div className="hero-copy">
+            {course.subtitle ? <p className="lede">{course.subtitle}</p> : null}
+            {course.description ? <p>{course.description}</p> : null}
+          </div>
+        </section>
         {course.thumbnailUrl ? (
-          <img alt="" className="hero-image" src={course.thumbnailUrl} />
+          <section className="hero panel hero-art-panel">
+            <img alt="" className="hero-image" src={course.thumbnailUrl} />
+          </section>
         ) : null}
       </section>
 

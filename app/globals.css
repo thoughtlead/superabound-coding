@@ -312,6 +312,10 @@ form {
   gap: 20px;
 }
 
+.admin-course-list-section {
+  margin-top: 30px;
+}
+
 .stack-tight {
   gap: 12px;
 }
@@ -543,15 +547,43 @@ form {
   background: #fff;
 }
 
-.hero {
+.hero-shell {
   display: grid;
-  gap: 24px;
-  grid-template-columns: minmax(0, 1.6fr) minmax(220px, 0.9fr);
+  gap: 18px;
+  grid-template-columns: minmax(0, 0.95fr) minmax(320px, 0.8fr);
+  align-items: start;
+}
+
+.hero-shell-text-only {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.hero {
+  display: block;
+}
+
+.hero-copy-panel,
+.hero-art-panel {
+  min-height: 0;
 }
 
 .hero-copy {
   display: grid;
   gap: 12px;
+  align-content: start;
+}
+
+.hero-copy-panel {
+  padding: 24px 28px;
+}
+
+.hero-art-panel {
+  overflow: hidden;
+  padding: 0;
+}
+
+.hero-art-panel .hero-image {
+  aspect-ratio: 16 / 10;
 }
 
 .lede {
@@ -1408,7 +1440,7 @@ form {
     padding: 20px;
   }
 
-  .hero,
+  .hero-shell,
   .lesson-layout {
     grid-template-columns: 1fr;
   }

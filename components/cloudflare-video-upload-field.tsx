@@ -263,22 +263,24 @@ export function CloudflareVideoUploadField({
         <label className="button button-secondary file-picker-button" htmlFor={fileInputId}>
           Choose video
         </label>
-        <span className="file-picker-name">{selectedFileName || "No file selected"}</span>
-        {uploading ? (
-          <span className="form-note">
-            Uploading your video. Keep this tab open until the upload completes.
-          </span>
-        ) : null}
         {uploading ? (
           <button className="button button-secondary" onClick={handleCancelUpload} type="button">
             Cancel upload
           </button>
         ) : null}
       </div>
-      <p className="form-note">
-        Large files upload with Cloudflare Stream resumable uploads. Keep this tab open until the
-        upload completes.
-      </p>
+      <div className="stack stack-tight">
+        <p className="file-picker-name">{selectedFileName || "No file selected"}</p>
+        {uploading ? (
+          <p className="form-note">
+            Uploading your video. Keep this tab open until the upload completes.
+          </p>
+        ) : (
+          <p className="form-note">
+            Large files use Cloudflare Stream resumable upload.
+          </p>
+        )}
+      </div>
       {progress !== null ? <p className="form-note">Upload progress: {progress}%</p> : null}
       {message ? <p className="form-status">{message}</p> : null}
       {processingStatus?.thumbnailUrl ? (

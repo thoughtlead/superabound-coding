@@ -73,7 +73,11 @@ export default async function AdminCoursesPage({
         />
       ) : null}
       {!setupRequired ? (
-        <section className="stack">
+        <section className="stack admin-course-list-section">
+          <div className="section-header">
+            <p className="eyebrow">Existing courses</p>
+            <h2>Manage courses</h2>
+          </div>
           {courses.map((course) => (
             <Link
               key={course.id}
