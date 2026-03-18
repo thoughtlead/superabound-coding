@@ -166,7 +166,6 @@ export default async function LessonPage({ params }: LessonPageProps) {
                         className={`sidebar-lesson-link${isActive ? " is-active" : ""}`}
                         href={`/library/${course.slug}/${moduleLesson.slug}`}
                       >
-                        <span className="sidebar-lesson-index">{moduleLesson.position + 1}</span>
                         <span className="sidebar-lesson-copy">
                           <strong>{moduleLesson.title}</strong>
                           {moduleLesson.summary ? <span>{moduleLesson.summary}</span> : null}

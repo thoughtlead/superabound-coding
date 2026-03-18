@@ -63,7 +63,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
           >
             <div className="module-head">
               <div>
-                <p className="eyebrow">Topic {moduleItem.position + 1}</p>
+                <p className="eyebrow">Topic</p>
                 <h2>{moduleItem.title}</h2>
                 {moduleItem.description ? <p>{moduleItem.description}</p> : null}
               </div>
@@ -77,7 +77,6 @@ export default async function CoursePage({ params }: CoursePageProps) {
                   href={`/library/${course.slug}/${lesson.slug}`}
                 >
                   <div>
-                    <span className="lesson-index">{lesson.position + 1}</span>
                     <div>
                       <h3>{lesson.title}</h3>
                       {lesson.summary ? <p>{lesson.summary}</p> : null}

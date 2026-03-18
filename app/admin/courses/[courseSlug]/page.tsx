@@ -179,7 +179,7 @@ export default async function AdminCoursePage({
               <article id={`module-${moduleItem.id}`} key={moduleItem.id} className="panel module-card">
                 <div className="row-spread">
                   <div>
-                    <p className="eyebrow">Topic {moduleItem.position + 1}</p>
+                    <p className="eyebrow">Topic</p>
                     <h2>{moduleItem.title}</h2>
                   </div>
                   <div className="inline-actions">
@@ -253,7 +253,6 @@ export default async function AdminCoursePage({
                     return (
                       <div key={lesson.id} className="lesson-row lesson-row-admin">
                         <div>
-                          <span className="lesson-index">{index + 1}</span>
                           <div>
                             <h3>{lesson.title}</h3>
                             {lesson.summary ? <p>{lesson.summary}</p> : null}
