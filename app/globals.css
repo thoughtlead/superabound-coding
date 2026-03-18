@@ -664,8 +664,32 @@ form {
   transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
 }
 
+.lesson-row-admin {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+}
+
+.lesson-row-admin > .inline-actions {
+  flex-wrap: nowrap;
+  align-items: flex-start;
+}
+
+.lesson-row-admin > .inline-actions form,
+.lesson-row-admin > .inline-actions a {
+  flex: 0 0 auto;
+}
+
 .admin-course-row-copy {
   min-width: 0;
+}
+
+.admin-course-row h2 {
+  font-family: var(--display-title-font);
+  font-size: clamp(1.38rem, 1.8vw, 1.7rem);
+  line-height: 1.08;
+  letter-spacing: -0.028em;
+  font-weight: 700;
 }
 
 .admin-course-row-actions {

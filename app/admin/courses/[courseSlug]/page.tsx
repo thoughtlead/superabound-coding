@@ -60,6 +60,7 @@ export default async function AdminCoursePage({
   return (
     <AppShell
       title={course.title}
+      headerVariant="course"
       eyebrow={
         <>
           <Link className="eyebrow-link" href="/admin/courses">
