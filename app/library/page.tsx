@@ -15,7 +15,8 @@ export default async function LibraryPage() {
 
   return (
     <AppShell
-      title="Your courses"
+      title="Your library"
+      headerVariant="course"
       eyebrow={profile?.full_name ?? user.email ?? "Member library"}
       showAdmin={isAdmin}
       actions={
@@ -29,11 +30,11 @@ export default async function LibraryPage() {
       {setupRequired ? <SetupState /> : null}
       {!setupRequired && courses.length === 0 ? (
         <EmptyState
-          title={isAdmin ? "No courses yet" : "No course access yet"}
+          title={isAdmin ? "No content yet" : "No content access yet"}
           body={
             isAdmin
               ? "Create a course in admin and it will appear here immediately."
-              : "Members only see courses they are enrolled in. Add a course enrollment in Supabase to populate this library."
+              : "Members only see content they are enrolled in. Add a course enrollment in Supabase to populate this library."
           }
         />
       ) : null}
@@ -53,7 +54,6 @@ export default async function LibraryPage() {
                 )}
               </div>
               <div className="course-copy">
-                <span className="pill">Course</span>
                 <h2>{course.title}</h2>
                 {course.subtitle ? <p>{course.subtitle}</p> : null}
                 {!course.subtitle && course.description ? <p>{course.description}</p> : null}

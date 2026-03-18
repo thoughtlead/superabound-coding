@@ -40,7 +40,7 @@ function getEmbedUrl(block: LessonBlock) {
 export function MediaBlock({ block, variant = "default" }: MediaBlockProps) {
   if (block.type === "rich_text" && block.body) {
     return (
-      <section className="panel lesson-panel">
+      <section className="panel lesson-panel lesson-rich-text-panel">
         {block.title ? <h2>{block.title}</h2> : null}
         <div
           className="rich-text"
@@ -55,7 +55,7 @@ export function MediaBlock({ block, variant = "default" }: MediaBlockProps) {
     const isHero = variant === "hero";
 
     return (
-      <section className={isHero ? "lesson-hero-media" : "panel lesson-panel"}>
+      <section className={isHero ? "lesson-hero-media" : "panel lesson-panel lesson-media-panel"}>
         {!isHero && block.title ? <h2>{block.title}</h2> : null}
         {embedUrl ? (
           <div className={isHero ? "media-frame media-frame-hero" : "media-frame"}>
@@ -75,7 +75,7 @@ export function MediaBlock({ block, variant = "default" }: MediaBlockProps) {
 
   if (block.type === "audio") {
     return (
-      <section className="panel lesson-panel">
+      <section className="panel lesson-panel lesson-audio-panel">
         {block.title ? <h2>{block.title}</h2> : null}
         {block.mediaUrl ? (
           <audio controls className="audio-player" preload="metadata">
@@ -90,7 +90,7 @@ export function MediaBlock({ block, variant = "default" }: MediaBlockProps) {
 
   if (block.type === "image" && block.mediaUrl) {
     return (
-      <section className="panel lesson-panel">
+      <section className="panel lesson-panel lesson-image-panel">
         <figure className="content-image">
           <img
             alt={block.title ?? "Lesson image"}
@@ -105,7 +105,7 @@ export function MediaBlock({ block, variant = "default" }: MediaBlockProps) {
 
   if (block.type === "download" && block.mediaUrl) {
     return (
-      <section className="panel lesson-panel">
+      <section className="panel lesson-panel lesson-download-panel">
         <a
           className="button button-secondary"
           href={block.mediaUrl}

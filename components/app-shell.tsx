@@ -6,6 +6,7 @@ type AppShellProps = {
   eyebrow?: React.ReactNode;
   actions?: React.ReactNode;
   showAdmin?: boolean;
+  headerVariant?: "default" | "course" | "lesson";
   children: React.ReactNode;
 };
 
@@ -14,6 +15,7 @@ export async function AppShell({
   eyebrow,
   actions,
   showAdmin = false,
+  headerVariant = "default",
   children,
 }: AppShellProps) {
   const portal = await getCurrentPortal();
@@ -33,7 +35,15 @@ export async function AppShell({
         </nav>
       </aside>
       <div className="shell-main">
-        <header className="page-header">
+        <header
+          className={`page-header${
+            headerVariant === "course"
+              ? " page-header-course"
+              : headerVariant === "lesson"
+                ? " page-header-lesson"
+                : ""
+          }`}
+        >
           <div>
             {eyebrow ? <p className="eyebrow">{eyebrow}</p> : null}
             <h1>{title}</h1>

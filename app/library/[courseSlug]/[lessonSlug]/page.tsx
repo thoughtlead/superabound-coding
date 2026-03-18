@@ -84,6 +84,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
   return (
     <AppShell
       title={lesson.title}
+      headerVariant="lesson"
       eyebrow={
         <>
           <Link className="eyebrow-link" href={`/library/${course.slug}`}>

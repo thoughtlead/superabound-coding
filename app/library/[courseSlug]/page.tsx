@@ -36,6 +36,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
   return (
     <AppShell
       title={course.title}
+      headerVariant="course"
       eyebrow="Course"
       actions={<span className="stat-chip">{getCourseLessonCount(course)} lessons</span>}
     >

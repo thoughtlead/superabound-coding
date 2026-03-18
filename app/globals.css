@@ -14,6 +14,11 @@
   --radius-panel: 24px;
   --radius-control: 14px;
   --radius-button: 14px;
+  --display-title-font: "Avenir Next", "Suisse Int'l", "Neue Haas Grotesk Text Pro",
+    "Helvetica Neue", sans-serif;
+  --lesson-title-font: var(--display-title-font);
+  --lesson-block-title-font: "Avenir Next", "Suisse Int'l", "Neue Haas Grotesk Text Pro",
+    "Helvetica Neue", sans-serif;
 }
 
 * {
@@ -253,6 +258,28 @@ form {
   line-height: 0.98;
   letter-spacing: -0.04em;
   font-weight: 800;
+}
+
+.page-header-lesson {
+  margin-bottom: 28px;
+}
+
+.page-header-course h1 {
+  max-width: 22ch;
+  font-family: var(--display-title-font);
+  font-size: clamp(2.35rem, 3vw, 3rem);
+  line-height: 0.99;
+  letter-spacing: -0.035em;
+  font-weight: 720;
+}
+
+.page-header-lesson h1 {
+  font-family: var(--lesson-title-font);
+  max-width: 24ch;
+  font-size: clamp(2.15rem, 2.7vw, 3rem);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  font-weight: 680;
 }
 
 .page-title-link {
@@ -507,11 +534,19 @@ form {
 
 .course-copy h2,
 .module-card h2,
-.lesson-panel h2,
 .sidebar-panel h2,
 .admin-course-row h2 {
   font-size: 1.55rem;
   line-height: 1.15;
+}
+
+.lesson-panel h2 {
+  margin: 0 0 18px;
+  font-family: var(--lesson-block-title-font);
+  font-size: clamp(1.22rem, 1.7vw, 1.42rem);
+  line-height: 1.18;
+  letter-spacing: -0.02em;
+  font-weight: 700;
 }
 
 .pill,
@@ -704,6 +739,17 @@ form {
   height: 100%;
   aspect-ratio: auto;
   border-radius: 0;
+}
+
+.lesson-media-panel > .media-frame,
+.lesson-audio-panel > .audio-player,
+.lesson-rich-text-panel > .rich-text,
+.lesson-download-panel > .button {
+  margin-top: 4px;
+}
+
+.lesson-image-panel .content-image {
+  margin-top: 4px;
 }
 
 .sidebar-lesson-list {
