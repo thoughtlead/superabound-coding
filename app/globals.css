@@ -1519,3 +1519,156 @@ form {
     flex-direction: column;
   }
 }
+
+.marketing-shell {
+  width: min(1280px, calc(100vw - 48px));
+  margin: 0 auto;
+  padding: 28px 0 56px;
+}
+
+body:has(.marketing-shell) {
+  background:
+    linear-gradient(180deg, rgba(248, 250, 255, 0.82), rgba(244, 244, 246, 0.94)),
+    radial-gradient(circle at 14% 86%, rgba(255, 122, 36, 0.22), transparent 18%),
+    radial-gradient(circle at 82% 10%, rgba(43, 128, 216, 0.18), transparent 24%),
+    url("/login-background.jpg");
+  background-size: cover;
+  background-position: center top;
+  background-attachment: fixed;
+}
+
+.marketing-topbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.marketing-brand-note {
+  color: var(--muted);
+  font-size: 0.98rem;
+}
+
+.marketing-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+  gap: 24px;
+  align-items: start;
+  margin-bottom: 24px;
+}
+
+.marketing-hero-copy h1 {
+  max-width: 10ch;
+  margin-bottom: 18px;
+  font-family: var(--display-title-font);
+  font-size: clamp(2.8rem, 5vw, 4.8rem);
+  line-height: 0.96;
+  letter-spacing: -0.04em;
+  font-weight: 690;
+  text-wrap: balance;
+}
+
+.marketing-lede {
+  max-width: 52rem;
+  color: #4c443d;
+  font-size: 1.2rem;
+  line-height: 1.6;
+}
+
+.marketing-hero-card,
+.marketing-card {
+  padding: 28px;
+}
+
+.marketing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.marketing-offer-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.25fr);
+  gap: 24px;
+  align-items: start;
+  margin-bottom: 24px;
+  padding: 28px;
+  background:
+    linear-gradient(135deg, rgba(255, 250, 241, 0.98), rgba(255, 255, 255, 0.92)),
+    radial-gradient(circle at left bottom, rgba(255, 122, 36, 0.12), transparent 30%);
+}
+
+.marketing-card h2,
+.marketing-hero-card h2,
+.marketing-offer-panel h2 {
+  margin-bottom: 10px;
+  font-family: var(--display-title-font);
+  font-size: clamp(1.45rem, 2vw, 2rem);
+  line-height: 1.04;
+  letter-spacing: -0.03em;
+  font-weight: 700;
+}
+
+.marketing-hero-card {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(249, 246, 242, 0.94)),
+    radial-gradient(circle at top right, rgba(40, 118, 202, 0.08), transparent 30%);
+}
+
+.marketing-form-fallback {
+  padding: 20px;
+  border: 1px dashed rgba(29, 27, 25, 0.18);
+  border-radius: 20px;
+  background: rgba(247, 247, 250, 0.72);
+}
+
+.hubspot-form-shell {
+  min-height: 280px;
+}
+
+.marketing-form-intro {
+  margin-bottom: 18px;
+}
+
+.hubspot-form-target :is(iframe, form) {
+  width: 100%;
+}
+
+.marketing-footer {
+  display: flex;
+  justify-content: center;
+  margin-top: 44px;
+  padding-bottom: 8px;
+}
+
+.marketing-footer-logo {
+  width: min(360px, 52vw);
+  height: auto;
+  opacity: 0.96;
+}
+
+@media (max-width: 1100px) {
+  .marketing-hero,
+  .marketing-offer-panel,
+  .marketing-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .marketing-shell {
+    width: min(100vw - 32px, 1280px);
+    padding-top: 20px;
+  }
+
+  .marketing-topbar {
+    flex-direction: column;
+  }
+
+  .marketing-hero-copy h1 {
+    max-width: 13ch;
+    font-size: clamp(2.5rem, 11vw, 3.7rem);
+  }
+}
