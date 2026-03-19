@@ -58,6 +58,10 @@ function getMultiValues(formData: FormData, key: string) {
     .filter(Boolean);
 }
 
+function getFirstName(fullName: string) {
+  return fullName.trim().split(/\s+/)[0] ?? "";
+}
+
 function getReturnPath(formData: FormData, fallbackPath: string) {
   const returnTo = getValue(formData, "returnTo");
   return returnTo.startsWith("/") ? returnTo : fallbackPath;
@@ -717,7 +721,7 @@ export async function inviteMemberAction(formData: FormData) {
 
   const { data: availableCourses, error: availableCoursesError } = await supabase
     .from("courses")
-    .select("id")
+    .select("id, title")
     .eq("portal_id", portal.id)
     .in("id", courseIds);
 
@@ -795,12 +799,17 @@ export async function inviteMemberAction(formData: FormData) {
     "/create-account?message=Create+your+password+to+finish+setting+up+your+account.",
   );
   const redirectTo = `${getRequestBaseUrl()}/auth/callback?next=${nextPath}`;
+  const firstName = getFirstName(fullName);
+  const grantedCourseTitle =
+    availableCourses && availableCourses.length === 1 ? availableCourses[0]?.title ?? null : null;
 
   const { data: inviteData, error: inviteError } = await adminSupabase.auth.admin.inviteUserByEmail(
     email,
     {
       data: {
         full_name: fullName,
+        first_name: firstName,
+        granted_course_title: grantedCourseTitle,
       },
       redirectTo,
     },

@@ -66,6 +66,12 @@ export function getHubspotPayloadFullName(payload: HubspotEnrollmentPayload) {
   return combinedName || null;
 }
 
+function getFirstName(fullName: string | null) {
+  return String(fullName ?? "")
+    .trim()
+    .split(/\s+/)[0] ?? "";
+}
+
 function timingSafeEqualHex(left: string, right: string) {
   try {
     const leftBuffer = Buffer.from(left, "hex");
@@ -242,11 +248,11 @@ export async function provisionHubspotCourseAccess({
   const { data: inviteData, error: inviteError } = await adminSupabase.auth.admin.inviteUserByEmail(
     email,
     {
-      data: fullName
-        ? {
-            full_name: fullName,
-          }
-        : undefined,
+      data: {
+        full_name: fullName,
+        first_name: getFirstName(fullName),
+        granted_course_title: course.title,
+      },
       redirectTo,
     },
   );
