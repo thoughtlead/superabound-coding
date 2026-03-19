@@ -1,6 +1,9 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { HubspotFormEmbed } from "@/components/hubspot-form-embed";
+import { isMarketingHost } from "@/utils/portal";
 import { createClient } from "@/utils/supabase/server";
 
 export const metadata: Metadata = {
@@ -49,10 +52,21 @@ const landingPageContent = {
 } as const;
 
 export default async function HomePage() {
+  const headerStore = headers();
+  const host = headerStore.get("x-forwarded-host") ?? headerStore.get("host");
+  const isMarketingSurface = isMarketingHost(host);
   const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  if (!isMarketingSurface) {
+    if (user) {
+      redirect("/library");
+    }
+
+    redirect("/login");
+  }
 
   const libraryHref = user ? "/library" : "/login";
 

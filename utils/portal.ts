@@ -20,9 +20,27 @@ export type PortalMembership = {
 
 const RESERVED_SUBDOMAINS = new Set(["www"]);
 const DEFAULT_PORTAL_SLUG = process.env.DEFAULT_PORTAL_SLUG ?? "superabound";
+const MARKETING_HOST = (process.env.NEXT_PUBLIC_MARKETING_HOST ?? "coursesforcreatives.com")
+  .trim()
+  .toLowerCase();
 
 function normalizeHostname(host: string) {
   return host.trim().toLowerCase().replace(/:\d+$/, "");
+}
+
+export function isMarketingHost(host: string | null | undefined) {
+  if (!host) {
+    return false;
+  }
+
+  const hostname = normalizeHostname(host);
+
+  return (
+    hostname === MARKETING_HOST ||
+    hostname === `www.${MARKETING_HOST}` ||
+    hostname === "coursesforcreatives.lvh.me" ||
+    hostname === "coursesforcreatives.localhost"
+  );
 }
 
 export function getPortalSlugFromHost(host: string | null | undefined) {
