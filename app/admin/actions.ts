@@ -791,6 +791,9 @@ export async function inviteMemberAction(formData: FormData) {
       withMessage(
         "/admin/enrollments",
         "Member already existed. Selected courses have been enabled.",
+        {
+          inviteFormKey: String(Date.now()),
+        },
       ),
     );
   }
@@ -868,6 +871,9 @@ export async function inviteMemberAction(formData: FormData) {
       withMessage(
         "/admin/enrollments",
         "Invite sent. The member will receive an email to set up their account, and their course access is already enabled.",
+        {
+          inviteFormKey: String(Date.now()),
+        },
       ),
     );
 }

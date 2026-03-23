@@ -15,6 +15,7 @@ import Link from "next/link";
 
 type AdminEnrollmentsPageProps = {
   searchParams?: {
+    inviteFormKey?: string;
     memberId?: string;
     message?: string;
     page?: string;
@@ -29,6 +30,7 @@ export default async function AdminEnrollmentsPage({
   const currentPage = Number(searchParams?.page ?? "1");
   const query = searchParams?.q ?? "";
   const memberId = searchParams?.memberId ?? "";
+  const inviteFormKey = searchParams?.inviteFormKey ?? "invite-member-form";
   const {
     courses,
     users,
@@ -102,7 +104,7 @@ export default async function AdminEnrollmentsPage({
       {!setupRequired && !memberId ? (
         <section className="panel lesson-panel">
           <h2>Invite member</h2>
-          <form action={inviteMemberAction} className="editor-form stack">
+          <form key={inviteFormKey} action={inviteMemberAction} className="editor-form stack">
             <div className="field-grid">
               <div>
                 <label htmlFor="invite-full-name">Full name</label>
