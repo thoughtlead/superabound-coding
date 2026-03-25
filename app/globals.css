@@ -867,6 +867,39 @@ form {
   text-underline-offset: 2px;
 }
 
+.trusted-html {
+  display: grid;
+  gap: 12px;
+}
+
+.trusted-html p,
+.trusted-html li {
+  color: var(--muted);
+}
+
+.trusted-html a {
+  color: #1a5fd0;
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 2px;
+}
+
+.trusted-html h1,
+.trusted-html h2,
+.trusted-html h3,
+.trusted-html h4 {
+  color: var(--text);
+  line-height: 1.15;
+}
+
+.trusted-html-compact {
+  gap: 8px;
+}
+
+.trusted-html-description {
+  gap: 10px;
+}
+
 .download-list {
   display: grid;
   gap: 12px;
@@ -879,6 +912,12 @@ form {
   font-size: 0.88rem;
   font-weight: 700;
   letter-spacing: -0.01em;
+}
+
+.field-hint {
+  margin-top: 8px;
+  font-size: 0.88rem;
+  line-height: 1.45;
 }
 
 .field-grid {

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { SetupState } from "@/components/setup-state";
+import { TrustedHtml } from "@/components/trusted-html";
 import { getCurrentPortalProfile } from "@/utils/auth";
 import { getAccessibleCourse, getCourseLessonCount } from "@/utils/library";
 
@@ -44,7 +45,9 @@ export default async function CoursePage({ params }: CoursePageProps) {
         <section className="hero panel hero-copy-panel">
           <div className="hero-copy">
             {course.subtitle ? <p className="lede">{course.subtitle}</p> : null}
-            {course.description ? <p>{course.description}</p> : null}
+            {course.description ? (
+              <TrustedHtml className="trusted-html trusted-html-description" html={course.description} />
+            ) : null}
           </div>
         </section>
         {course.thumbnailUrl ? (
@@ -65,7 +68,9 @@ export default async function CoursePage({ params }: CoursePageProps) {
               <div>
                 <p className="eyebrow">Topic</p>
                 <h2>{moduleItem.title}</h2>
-                {moduleItem.description ? <p>{moduleItem.description}</p> : null}
+                {moduleItem.description ? (
+                  <TrustedHtml className="trusted-html trusted-html-compact" html={moduleItem.description} />
+                ) : null}
               </div>
               <span className="stat-chip">{moduleItem.lessons.length} lessons</span>
             </div>

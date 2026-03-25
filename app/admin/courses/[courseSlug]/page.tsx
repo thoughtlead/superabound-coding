@@ -111,6 +111,7 @@ export default async function AdminCoursePage({
               <div>
                 <label htmlFor="course-description">Description</label>
                 <textarea defaultValue={course.description ?? ""} id="course-description" name="description" rows={4} />
+                <p className="field-hint">Basic HTML is allowed here and will render in the library.</p>
               </div>
               <StorageUploadField
                 accept="image/*"
@@ -238,6 +239,7 @@ export default async function AdminCoursePage({
                       name="description"
                       rows={3}
                     />
+                    <p className="field-hint">Basic HTML is allowed here and will render in the library.</p>
                   </div>
                   <div className="panel-actions">
                     <button type="submit">Save topic</button>

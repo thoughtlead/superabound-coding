@@ -4,6 +4,7 @@ import Link from "next/link";
 import { AppShell } from "@/components/app-shell";
 import { EmptyState } from "@/components/empty-state";
 import { SetupState } from "@/components/setup-state";
+import { TrustedHtml } from "@/components/trusted-html";
 import { getCurrentPortalProfile } from "@/utils/auth";
 import { getMemberCourses } from "@/utils/library";
 
@@ -56,7 +57,9 @@ export default async function LibraryPage() {
               <div className="course-copy">
                 <h2>{course.title}</h2>
                 {course.subtitle ? <p>{course.subtitle}</p> : null}
-                {!course.subtitle && course.description ? <p>{course.description}</p> : null}
+                {!course.subtitle && course.description ? (
+                  <TrustedHtml className="trusted-html trusted-html-compact" html={course.description} />
+                ) : null}
               </div>
             </Link>
           ))}

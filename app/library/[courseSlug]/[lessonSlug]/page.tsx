@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
 import { MediaBlock } from "@/components/media-block";
 import { SetupState } from "@/components/setup-state";
+import { TrustedHtml } from "@/components/trusted-html";
 import { getCurrentPortalProfile } from "@/utils/auth";
 import { getAccessibleCourse, getLessonContent } from "@/utils/library";
 
@@ -154,7 +155,9 @@ export default async function LessonPage({ params }: LessonPageProps) {
                 <div>
                   <p className="eyebrow">Current topic</p>
                   <h2>{activeModule.title}</h2>
-                  {activeModule.description ? <p>{activeModule.description}</p> : null}
+                  {activeModule.description ? (
+                    <TrustedHtml className="trusted-html trusted-html-compact" html={activeModule.description} />
+                  ) : null}
                 </div>
                 <div className="sidebar-lesson-list">
                   {activeModule.lessons.map((moduleLesson) => {
