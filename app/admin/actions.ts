@@ -246,14 +246,15 @@ async function swapBlockPosition(
 }
 
 export async function createCourseAction(formData: FormData) {
-  const { supabase, user, portal } = await requireAdmin();
+  const { user, portal } = await requireAdmin();
+  const adminSupabase = createAdminClient();
   const title = getValue(formData, "title");
 
   if (!title) {
     redirect(withMessage("/admin/courses", "Course title is required."));
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await adminSupabase
     .from("courses")
     .insert({
       title,
