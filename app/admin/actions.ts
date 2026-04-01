@@ -324,14 +324,15 @@ export async function updateCourseAction(
 }
 
 export async function createModuleAction(courseSlug: string, courseId: string, formData: FormData) {
-  const { supabase } = await requireAdmin();
+  await requireAdmin();
+  const adminSupabase = createAdminClient();
   const title = getValue(formData, "title");
 
   if (!title) {
     redirect(withMessage(`/admin/courses/${courseSlug}`, "Topic title is required."));
   }
 
-  const { error } = await supabase.from("modules").insert({
+  const { error } = await adminSupabase.from("modules").insert({
     course_id: courseId,
     title,
     description: getValue(formData, "description") || null,
@@ -447,14 +448,15 @@ export async function createLessonAction(
   moduleId: string,
   formData: FormData,
 ) {
-  const { supabase } = await requireAdmin();
+  await requireAdmin();
+  const adminSupabase = createAdminClient();
   const title = getValue(formData, "title");
 
   if (!title) {
     redirect(withMessage(`/admin/courses/${courseSlug}`, "Lesson title is required."));
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await adminSupabase
     .from("lessons")
     .insert({
       module_id: moduleId,
