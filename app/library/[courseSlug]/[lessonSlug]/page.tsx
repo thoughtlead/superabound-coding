@@ -7,22 +7,25 @@ import { MediaBlock } from "@/components/media-block";
 import { SetupState } from "@/components/setup-state";
 import { TrustedHtml } from "@/components/trusted-html";
 import { getCurrentPortalProfile } from "@/utils/auth";
-import { getAccessibleCourse, getLessonContent } from "@/utils/library";
+import { getAccessibleCourse, getAdminCourse, getLessonContent } from "@/utils/library";
 
 type LessonPageProps = {
   params: {
     courseSlug: string;
     lessonSlug: string;
   };
+  searchParams?: {
+    preview?: string;
+  };
 };
 
-export default async function LessonPage({ params }: LessonPageProps) {
+export default async function LessonPage({ params, searchParams }: LessonPageProps) {
   const { user, isPortalAdmin } = await getCurrentPortalProfile();
-  const courseState = await getAccessibleCourse(
-    user.id,
-    params.courseSlug,
-    isPortalAdmin,
-  );
+  const isMemberPreview = searchParams?.preview === "member" && isPortalAdmin;
+  const courseState = isMemberPreview
+    ? await getAdminCourse(params.courseSlug, true)
+    : await getAccessibleCourse(user.id, params.courseSlug, isPortalAdmin);
+  const previewSuffix = isMemberPreview ? "?preview=member" : "";
 
   if (courseState.setupRequired) {
     return (
@@ -88,14 +91,14 @@ export default async function LessonPage({ params }: LessonPageProps) {
       headerVariant="lesson"
       eyebrow={
         <>
-          <Link className="eyebrow-link" href={`/library/${course.slug}`}>
+          <Link className="eyebrow-link" href={`/library/${course.slug}${previewSuffix}`}>
             {course.title}
           </Link>
           {" / "}
           {activeModule ? (
             <Link
               className="eyebrow-link"
-              href={`/library/${course.slug}#module-${activeModule.id}`}
+              href={`/library/${course.slug}${previewSuffix}#module-${activeModule.id}`}
             >
               {activeModule.title}
             </Link>
@@ -107,7 +110,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
         </>
       }
       actions={
-        <Link className="button button-secondary" href={`/library/${course.slug}`}>
+        <Link className="button button-secondary" href={`/library/${course.slug}${previewSuffix}`}>
           Course outline
         </Link>
       }
@@ -167,7 +170,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
                       <Link
                         key={moduleLesson.id}
                         className={`sidebar-lesson-link${isActive ? " is-active" : ""}`}
-                        href={`/library/${course.slug}/${moduleLesson.slug}`}
+                        href={`/library/${course.slug}/${moduleLesson.slug}${previewSuffix}`}
                       >
                         <span className="sidebar-lesson-copy">
                           <strong>{moduleLesson.title}</strong>
@@ -186,7 +189,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
             {previousLesson ? (
               <Link
                 className="button button-secondary"
-                href={`/library/${course.slug}/${previousLesson.slug}`}
+                href={`/library/${course.slug}/${previousLesson.slug}${previewSuffix}`}
               >
                 Previous: {previousLesson.title}
               </Link>
@@ -194,7 +197,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
             {nextLesson ? (
               <Link
                 className="button"
-                href={`/library/${course.slug}/${nextLesson.slug}`}
+                href={`/library/${course.slug}/${nextLesson.slug}${previewSuffix}`}
               >
                 Next: {nextLesson.title}
               </Link>

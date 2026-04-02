@@ -539,7 +539,7 @@ export async function getAdminCourses() {
   };
 }
 
-export async function getAdminCourse(courseSlug: string) {
+export async function getAdminCourse(courseSlug: string, publishedOnly = false) {
   const supabase = createClient();
   const portal = await requireCurrentPortal();
   const { data, error } = await supabase
@@ -580,7 +580,7 @@ export async function getAdminCourse(courseSlug: string) {
 
   return {
     setupRequired: state.setupRequired,
-    course: state.data ? mapCourse(state.data) : null,
+    course: state.data ? mapCourse(state.data, publishedOnly) : null,
   };
 }
 

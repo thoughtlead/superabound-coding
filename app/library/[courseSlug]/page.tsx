@@ -6,21 +6,25 @@ import { AppShell } from "@/components/app-shell";
 import { SetupState } from "@/components/setup-state";
 import { TrustedHtml } from "@/components/trusted-html";
 import { getCurrentPortalProfile } from "@/utils/auth";
-import { getAccessibleCourse, getCourseLessonCount } from "@/utils/library";
+import { getAccessibleCourse, getAdminCourse, getCourseLessonCount } from "@/utils/library";
 
 type CoursePageProps = {
   params: {
     courseSlug: string;
   };
+  searchParams?: {
+    preview?: string;
+  };
 };
 
-export default async function CoursePage({ params }: CoursePageProps) {
+export default async function CoursePage({ params, searchParams }: CoursePageProps) {
   const { user, isPortalAdmin } = await getCurrentPortalProfile();
-  const { course, setupRequired } = await getAccessibleCourse(
-    user.id,
-    params.courseSlug,
-    isPortalAdmin,
-  );
+  const isMemberPreview = searchParams?.preview === "member" && isPortalAdmin;
+  const courseState = isMemberPreview
+    ? await getAdminCourse(params.courseSlug, true)
+    : await getAccessibleCourse(user.id, params.courseSlug, isPortalAdmin);
+  const { course, setupRequired } = courseState;
+  const previewSuffix = isMemberPreview ? "?preview=member" : "";
 
   if (setupRequired) {
     return (
@@ -79,7 +83,7 @@ export default async function CoursePage({ params }: CoursePageProps) {
                 <Link
                   key={lesson.id}
                   className="lesson-row"
-                  href={`/library/${course.slug}/${lesson.slug}`}
+                  href={`/library/${course.slug}/${lesson.slug}${previewSuffix}`}
                 >
                   <div>
                     <div>

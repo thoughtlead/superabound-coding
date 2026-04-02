@@ -93,7 +93,7 @@ export default async function AdminLessonPage({
       <section className="panel lesson-panel">
         <div className="row-spread">
           <h2>Lesson details</h2>
-          <Link className="button button-secondary" href={`/library/${lesson.courseSlug}/${lesson.slug}`}>
+          <Link className="button button-secondary" href={`/library/${lesson.courseSlug}/${lesson.slug}?preview=member`}>
             Preview lesson
           </Link>
         </div>

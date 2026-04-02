@@ -85,7 +85,7 @@ export default async function AdminCoursePage({
               </div>
               <div className="inline-actions">
                 {showCourseSavedTag ? <span className="stat-chip">Course saved</span> : null}
-                <Link className="button button-secondary" href={`/library/${course.slug}`}>
+                <Link className="button button-secondary" href={`/library/${course.slug}?preview=member`}>
                   Preview member view
                 </Link>
               </div>
