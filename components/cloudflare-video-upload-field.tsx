@@ -19,6 +19,8 @@ type UploadedVideoValues = {
   mediaUrl: string;
 };
 
+type PreviewState = "idle" | "uploading" | "processing" | "ready" | "error";
+
 type CloudflareVideoStatus = {
   errorReasonCode: string | null;
   errorReasonText: string | null;
@@ -145,6 +147,9 @@ export function CloudflareVideoUploadField({
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState<number | null>(null);
   const [processingStatus, setProcessingStatus] = useState<CloudflareVideoStatus | null>(null);
+  const [previewState, setPreviewState] = useState<PreviewState>(
+    currentEmbedUrl ? "ready" : "idle",
+  );
   const [selectedFileName, setSelectedFileName] = useState("");
   const uploadRef = useRef<tus.Upload | null>(null);
   const uploadedVideoRef = useRef<UploadedVideoValues | null>(null);
@@ -155,6 +160,19 @@ export function CloudflareVideoUploadField({
       isMountedRef.current = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!currentEmbedUrl) {
+      if (previewState === "ready") {
+        setPreviewState("idle");
+      }
+      return;
+    }
+
+    if (previewState === "idle") {
+      setPreviewState("ready");
+    }
+  }, [currentEmbedUrl, previewState]);
 
   const pollVideoStatus = async (mediaId: string) => {
     while (isMountedRef.current) {
@@ -172,6 +190,7 @@ export function CloudflareVideoUploadField({
             "error" in payload ? payload.error : "Could not fetch Cloudflare processing status.",
           );
           setProcessingStatus(null);
+          setPreviewState("error");
         }
         return;
       }
@@ -183,7 +202,13 @@ export function CloudflareVideoUploadField({
       setProcessingStatus(payload);
       setMessage(formatProcessingMessage(payload));
 
-      if (payload.readyToStream || payload.errorReasonText) {
+      if (payload.readyToStream) {
+        setPreviewState("ready");
+        return;
+      }
+
+      if (payload.errorReasonText) {
+        setPreviewState("error");
         return;
       }
 
@@ -203,6 +228,7 @@ export function CloudflareVideoUploadField({
 
     setSelectedFileName(file.name);
     setUploading(true);
+    setPreviewState("uploading");
     setMessage(null);
     setProgress(0);
     setProcessingStatus(null);
@@ -254,6 +280,7 @@ export function CloudflareVideoUploadField({
         setUploading(false);
         setProgress(null);
         setProcessingStatus(null);
+        setPreviewState("error");
         input.value = "";
       },
       onProgress(bytesUploaded, bytesTotal) {
@@ -274,6 +301,7 @@ export function CloudflareVideoUploadField({
           setMessage("Video uploaded, but Cloudflare did not return a video ID.");
           setUploading(false);
           setProgress(null);
+          setPreviewState("error");
           input.value = "";
           return;
         }
@@ -286,6 +314,7 @@ export function CloudflareVideoUploadField({
 
         setUploading(false);
         setProgress(100);
+        setPreviewState("processing");
         setMessage("Upload complete. Checking Cloudflare processing status...");
         input.value = "";
 
@@ -318,6 +347,7 @@ export function CloudflareVideoUploadField({
       setUploading(false);
       setProgress(null);
       setProcessingStatus(null);
+      setPreviewState("error");
       input.value = "";
     }
   };
@@ -334,20 +364,47 @@ export function CloudflareVideoUploadField({
     setUploading(false);
     setProgress(null);
     setProcessingStatus(null);
+    setPreviewState(currentEmbedUrl ? "ready" : "idle");
     setMessage("Upload canceled.");
   };
+
+  const showPreviewFrame = Boolean(currentEmbedUrl) && previewState === "ready";
+  const showProcessingPreview =
+    previewState === "uploading" ||
+    previewState === "processing" ||
+    previewState === "error";
 
   return (
     <div className="upload-field">
       <label>Cloudflare video upload</label>
-      {currentEmbedUrl ? (
+      {showPreviewFrame ? (
         <div className="media-frame">
           <iframe
             allow="autoplay; fullscreen; picture-in-picture"
             allowFullScreen
-            src={currentEmbedUrl}
+            src={currentEmbedUrl ?? undefined}
             title="Cloudflare video preview"
           />
+        </div>
+      ) : null}
+      {showProcessingPreview ? (
+        <div className="upload-preview-state">
+          {processingStatus?.thumbnailUrl ? (
+            <img
+              alt="Cloudflare video thumbnail"
+              className="upload-preview-thumbnail"
+              src={processingStatus.thumbnailUrl}
+            />
+          ) : (
+            <div className="upload-preview-placeholder">
+              <strong>Video uploaded</strong>
+              <span>
+                {previewState === "error"
+                  ? "Cloudflare has not finished preparing this video yet."
+                  : "Cloudflare is preparing the video for playback."}
+              </span>
+            </div>
+          )}
         </div>
       ) : null}
       <div className="upload-actions">
@@ -381,12 +438,6 @@ export function CloudflareVideoUploadField({
       </div>
       {progress !== null ? <p className="form-note">Upload progress: {progress}%</p> : null}
       {message ? <p className="form-status">{message}</p> : null}
-      {processingStatus?.thumbnailUrl ? (
-        <div className="stack stack-tight">
-          <p className="form-note">Video thumbnail</p>
-          <img alt="Cloudflare video thumbnail" src={processingStatus.thumbnailUrl} />
-        </div>
-      ) : null}
     </div>
   );
 }
