@@ -4,6 +4,27 @@ import { createRouteHandlerClient } from "@/utils/supabase/route-handler";
 
 const TUS_VERSION = "1.0.0";
 
+function getCloudflareUploadErrorMessage(payloadText: string) {
+  try {
+    const payload = JSON.parse(payloadText) as {
+      errors?: Array<{ code?: number; message?: string }>;
+      messages?: Array<{ code?: number; message?: string }>;
+    };
+    const quotaError = payload.errors?.find((error) => error.code === 10011);
+    const quotaMessage = payload.messages?.find((message) => message.code === 10011)?.message;
+
+    if (quotaError) {
+      return quotaMessage
+        ? `Cloudflare Stream is still reporting your account as over storage quota. ${quotaMessage} If you just added capacity, wait a few minutes and retry. If the limit still has not updated, refresh Cloudflare billing/usage or delete unused videos.`
+        : "Cloudflare Stream is still reporting your account as over storage quota. If you just added capacity, wait a few minutes and retry. If the limit still has not updated, refresh Cloudflare billing/usage or delete unused videos.";
+    }
+  } catch {
+    // Fall back to the raw error text below.
+  }
+
+  return payloadText || "Could not create Cloudflare upload URL.";
+}
+
 async function getAdminUser(request: Request) {
   const response = NextResponse.json({});
   const supabase = createRouteHandlerClient(response);
@@ -81,7 +102,7 @@ export async function POST(request: Request) {
 
   if (!cloudflareResponse.ok) {
     const errorText = await cloudflareResponse.text();
-    return new NextResponse(errorText || "Could not create Cloudflare upload URL.", {
+    return new NextResponse(getCloudflareUploadErrorMessage(errorText), {
       status: cloudflareResponse.status,
     });
   }

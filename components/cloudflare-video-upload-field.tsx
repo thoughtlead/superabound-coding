@@ -35,6 +35,27 @@ const UPLOAD_CHUNK_SIZE_BYTES = 8 * 1024 * 1024;
 const UPLOAD_RETRY_DELAYS_MS = [0, 1_000, 3_000, 5_000, 10_000, 20_000, 30_000, 60_000];
 const UPLOAD_METADATA_STORAGE_KEY = "cloudflare-stream-upload-metadata";
 
+function getUploadErrorMessage(error: unknown) {
+  const message =
+    error instanceof Error ? error.message : "Cloudflare upload failed.";
+
+  if (message.includes("Storage capacity exceeded") || message.includes("code: 10011")) {
+    const quotaMatch = message.match(/uploaded ([0-9.]+) minutes and are allocated ([0-9.]+) minutes/i);
+
+    if (quotaMatch) {
+      return `Cloudflare Stream is still reporting this account as over quota (${quotaMatch[1]} uploaded / ${quotaMatch[2]} allocated). If you just added storage, wait a few minutes and try again. If it still fails, refresh Cloudflare billing/usage or delete unused videos.`;
+    }
+
+    return "Cloudflare Stream is still reporting this account as over quota. If you just added storage, wait a few minutes and try again. If it still fails, refresh Cloudflare billing/usage or delete unused videos.";
+  }
+
+  if (message.includes("response code: 413")) {
+    return "Cloudflare rejected the upload before it started. This usually means the account is still over quota or the new storage has not propagated yet.";
+  }
+
+  return message || "Cloudflare upload failed.";
+}
+
 function formatProcessingMessage(status: CloudflareVideoStatus) {
   if (status.readyToStream) {
     return "Video is ready to stream.";
@@ -229,7 +250,7 @@ export function CloudflareVideoUploadField({
           return;
         }
 
-        setMessage(error.message || "Cloudflare upload failed.");
+        setMessage(getUploadErrorMessage(error));
         setUploading(false);
         setProgress(null);
         setProcessingStatus(null);
