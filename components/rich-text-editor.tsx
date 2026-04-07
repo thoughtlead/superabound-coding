@@ -28,6 +28,9 @@ function ToolbarButton({ action, isActive = false, label }: ToolbarButton) {
     <button
       aria-pressed={isActive}
       className={`rich-editor-button${isActive ? " is-active" : ""}`}
+      onMouseDown={(event) => {
+        event.preventDefault();
+      }}
       onClick={action}
       type="button"
     >
@@ -43,6 +46,27 @@ function ToolbarGroup({ children, label }: ToolbarGroupProps) {
       <div className="rich-editor-group">{children}</div>
     </div>
   );
+}
+
+function normalizeLinkHref(value: string) {
+  const trimmed = value.trim();
+
+  if (!trimmed) {
+    return "";
+  }
+
+  if (
+    trimmed.startsWith("http://") ||
+    trimmed.startsWith("https://") ||
+    trimmed.startsWith("mailto:") ||
+    trimmed.startsWith("tel:") ||
+    trimmed.startsWith("/") ||
+    trimmed.startsWith("#")
+  ) {
+    return trimmed;
+  }
+
+  return `https://${trimmed}`;
 }
 
 export function RichTextEditor({
@@ -95,21 +119,35 @@ export function RichTextEditor({
   }
 
   const editLink = () => {
+    const { from, to } = editor.state.selection;
     const previousUrl = editor.getAttributes("link").href ?? "";
+    const hasSelection = from !== to;
+
+    if (!hasSelection && !previousUrl) {
+      window.alert("Select the text you want to turn into a link first.");
+      return;
+    }
+
     const href = window.prompt("Enter link URL", previousUrl);
 
     if (href === null) {
       return;
     }
 
-    const nextHref = href.trim();
+    const nextHref = normalizeLinkHref(href);
 
     if (!nextHref) {
-      editor.chain().focus().unsetLink().run();
+      editor.chain().focus().setTextSelection({ from, to }).unsetLink().run();
       return;
     }
 
-    editor.chain().focus().extendMarkRange("link").setLink({ href: nextHref }).run();
+    editor
+      .chain()
+      .focus()
+      .setTextSelection({ from, to })
+      .extendMarkRange("link")
+      .setLink({ href: nextHref })
+      .run();
   };
 
   return (
